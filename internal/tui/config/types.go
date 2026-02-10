@@ -10,19 +10,19 @@ import (
 type EditState int
 
 const (
-	EditStateList   EditState = iota // リスト表示
-	EditStateEdit                    // 編集中
-	EditStateSaving                  // 保存中
+	EditStateList EditState = iota // リスト表示
+	EditStateEdit                   // 編集中
+	EditStateSaving                 // 保存中
 )
 
 // Field は編集可能なフィールド
 type Field struct {
-	Name         string    // 表示名
-	Key          string    // 内部キー
-	Value        string    // 現在の値
-	DefaultValue string    // デフォルト値
-	Description  string    // 説明
-	Type         FieldType // フィールドタイプ
+	Name        string      // 表示名
+	Key         string      // 内部キー
+	Value       string      // 現在の値
+	DefaultValue string     // デフォルト値
+	Description string      // 説明
+	Type        FieldType   // フィールドタイプ
 }
 
 // FieldType はフィールドの種類
@@ -36,10 +36,10 @@ const (
 
 // ConfigEditor は設定エディタのデータ
 type ConfigEditor struct {
-	Config     *config.Config
-	Fields     []Field
-	Modified   bool
-	ConfigPath string
+	Config      *config.Config
+	Fields      []Field
+	Modified    bool
+	ConfigPath  string
 }
 
 // NewConfigEditor は ConfigEditor を作成する
@@ -58,84 +58,36 @@ func NewConfigEditor(cfg *config.Config, configPath string) *ConfigEditor {
 func (e *ConfigEditor) buildFields() {
 	e.Fields = []Field{
 		{
-			Name:         "dev ルート",
-			Key:          "roots.dev",
-			Value:        e.Config.Roots["dev"],
+			Name:        "dev ルート",
+			Key:         "roots.dev",
+			Value:       e.Config.Roots["dev"],
 			DefaultValue: "",
-			Description:  "dev ワークスペースのパス",
-			Type:         FieldTypeString,
+			Description: "dev ワークスペースのパス",
+			Type:        FieldTypeString,
 		},
 		{
-			Name:         "release ルート",
-			Key:          "roots.release",
-			Value:        e.Config.Roots["release"],
+			Name:        "release ルート",
+			Key:         "roots.release",
+			Value:       e.Config.Roots["release"],
 			DefaultValue: "",
-			Description:  "release ワークスペースのパス",
-			Type:         FieldTypeString,
+			Description: "release ワークスペースのパス",
+			Type:        FieldTypeString,
 		},
 		{
-			Name:         "sandbox ルート",
-			Key:          "roots.sandbox",
-			Value:        e.Config.Roots["sandbox"],
+			Name:        "sandbox ルート",
+			Key:         "roots.sandbox",
+			Value:       e.Config.Roots["sandbox"],
 			DefaultValue: "",
-			Description:  "sandbox ワークスペースのパス",
-			Type:         FieldTypeString,
+			Description: "sandbox ワークスペースのパス",
+			Type:        FieldTypeString,
 		},
 		{
-			Name:         "デフォルトルート",
-			Key:          "default.root",
-			Value:        e.Config.Default.Root,
+			Name:        "デフォルトルート",
+			Key:         "default.root",
+			Value:       e.Config.Default.Root,
 			DefaultValue: "dev",
-			Description:  "デフォルトで使用するルート",
-			Type:         FieldTypeString,
-		},
-		{
-			Name:         "プロモート元",
-			Key:          "promote.from",
-			Value:        e.Config.Promote.From,
-			DefaultValue: "sandbox",
-			Description:  "プロモート元のルート",
-			Type:         FieldTypeString,
-		},
-		{
-			Name:         "プロモート先",
-			Key:          "promote.to",
-			Value:        e.Config.Promote.To,
-			DefaultValue: "dev",
-			Description:  "プロモート先のルート",
-			Type:         FieldTypeString,
-		},
-		{
-			Name:         "自動 git init",
-			Key:          "promote.auto_git_init",
-			Value:        boolToString(e.Config.Promote.AutoGitInit),
-			DefaultValue: "true",
-			Description:  "プロモート時に git init を自動実行",
-			Type:         FieldTypeBool,
-		},
-		{
-			Name:         "自動コミット",
-			Key:          "promote.auto_commit",
-			Value:        boolToString(e.Config.Promote.AutoCommit),
-			DefaultValue: "false",
-			Description:  "プロモート後に自動コミット",
-			Type:         FieldTypeBool,
-		},
-		{
-			Name:         "履歴機能",
-			Key:          "history.enabled",
-			Value:        boolToString(e.Config.History.Enabled),
-			DefaultValue: "true",
-			Description:  "undo 履歴を有効化",
-			Type:         FieldTypeBool,
-		},
-		{
-			Name:         "最大履歴数",
-			Key:          "history.max",
-			Value:        intToString(e.Config.History.Max),
-			DefaultValue: "50",
-			Description:  "保存する履歴の最大数",
-			Type:         FieldTypeInt,
+			Description: "デフォルトで使用するルート",
+			Type:        FieldTypeString,
 		},
 	}
 }
@@ -162,18 +114,6 @@ func (e *ConfigEditor) ApplyChanges() {
 			e.Config.Roots["sandbox"] = field.Value
 		case "default.root":
 			e.Config.Default.Root = field.Value
-		case "promote.from":
-			e.Config.Promote.From = field.Value
-		case "promote.to":
-			e.Config.Promote.To = field.Value
-		case "promote.auto_git_init":
-			e.Config.Promote.AutoGitInit = stringToBool(field.Value)
-		case "promote.auto_commit":
-			e.Config.Promote.AutoCommit = stringToBool(field.Value)
-		case "history.enabled":
-			e.Config.History.Enabled = stringToBool(field.Value)
-		case "history.max":
-			e.Config.History.Max = stringToInt(field.Value)
 		}
 	}
 }

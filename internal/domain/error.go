@@ -12,12 +12,9 @@ const (
 	ErrCodeRootNotFound     ErrorCode = "ROOT_NOT_FOUND"
 	ErrCodeProjectNotFound  ErrorCode = "PROJECT_NOT_FOUND"
 	ErrCodeDirtyRepo        ErrorCode = "DIRTY_REPO"
-	ErrCodePromoteFailed    ErrorCode = "PROMOTE_FAILED"
-	ErrCodeUndoNotAvailable ErrorCode = "UNDO_NOT_AVAILABLE"
 	ErrCodeInvalidPath      ErrorCode = "INVALID_PATH"
 	ErrCodeGitError         ErrorCode = "GIT_ERROR"
 	ErrCodeFSError          ErrorCode = "FS_ERROR"
-	ErrCodeWorktreeError    ErrorCode = "WORKTREE_ERROR"
 )
 
 // GhqxError represents a domain error with user-friendly output.

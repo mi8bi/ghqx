@@ -1,5 +1,7 @@
 package domain
 
+import "strings"
+
 // RootName represents a workspace root name (dev, release, sandbox, etc.).
 type RootName string
 
@@ -34,7 +36,8 @@ type Root struct {
 
 // Project represents a repository or directory in a workspace.
 type Project struct {
-	Name          string
+	Name          string // Full unique name (e.g., github.com/user/repo)
+	DisplayName   string // Short name for display (e.g., user/repo)
 	Root          RootName
 	Path          string
 	Zone          Zone
@@ -42,25 +45,20 @@ type Project struct {
 	HasGit        bool
 	Dirty         bool
 	Branch        string // Lazy-loaded in TUI mode
-	WorktreeCount int    // Number of git worktrees (0 if not a git repo)
 }
 
-// Worktree represents a git worktree.
-type Worktree struct {
-	Path   string
-	Branch string
-	Bare   bool
-	Locked bool
-}
 
-// PromoteRecord represents a single promote operation for undo history.
-type PromoteRecord struct {
-	Timestamp   int64
-	ProjectName string
-	FromRoot    RootName
-	FromPath    string
-	ToRoot      RootName
-	ToPath      string
+
+
+
+// FormatDisplayName shortens a full project name for display.
+// e.g., "github.com/user/repo" -> "user/repo"
+func FormatDisplayName(name string) string {
+	parts := strings.Split(name, "/")
+	if len(parts) >= 3 {
+		return strings.Join(parts[len(parts)-2:], "/")
+	}
+	return name
 }
 
 // DetermineZone maps a root name to a zone.

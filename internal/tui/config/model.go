@@ -239,7 +239,7 @@ func (m Model) View() string {
 // renderField はフィールドを描画する
 func (m Model) renderField(field Field, selected bool) string {
 	name := styleFieldName.Render(field.Name)
-
+	
 	var value string
 	if m.state == EditStateEdit && selected {
 		// 編集中

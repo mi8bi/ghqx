@@ -1,43 +1,25 @@
 package main
 
 import (
-	"github.com/mi8bi/ghqx/internal/tui"
 	"github.com/spf13/cobra"
-)
-
-var (
-	tuiWorktrees bool
+	"github.com/mi8bi/ghqx/internal/i18n"
+	"github.com/mi8bi/ghqx/internal/tui"
 )
 
 var tuiCmd = &cobra.Command{
 	Use:   "tui",
-	Short: "Launch interactive TUI (Terminal UI)",
-	Long: `TUI launches an interactive terminal interface for ghqx.
-
-Features:
-  - Visual project list with keyboard navigation
-  - Direct promote and undo operations
-  - Real-time status updates
-  - Japanese error messages
-
-Keybindings:
-  ↑↓ or j/k  - Navigate projects
-  Enter       - Promote selected project
-  u           - Undo last promotion
-  r           - Refresh project list
-  q or Ctrl+C - Quit`,
+	Short: i18n.T("tui.command.short"),
+	Long: i18n.T("tui.command.long"),
 	RunE: runTUI,
 }
 
 func init() {
-	tuiCmd.Flags().BoolVarP(&tuiWorktrees, "worktrees", "w", false, "show worktree counts")
 }
 
 func runTUI(cmd *cobra.Command, args []string) error {
-	app, err := loadApp()
-	if err != nil {
+	if err := loadApp(); err != nil {
 		return err
 	}
 
-	return tui.RunStatus(app, tuiWorktrees)
+	return tui.RunStatus(application)
 }

@@ -9,29 +9,14 @@ import (
 
 // Config represents the ghqx configuration.
 type Config struct {
-	Roots   map[string]string `toml:"roots"`
-	Default DefaultConfig     `toml:"default"`
-	Promote PromoteConfig     `toml:"promote"`
-	History HistoryConfig     `toml:"history"`
+	Roots    map[string]string `toml:"roots"`
+	Default  DefaultConfig     `toml:"default"`
 }
 
 // DefaultConfig represents default settings.
 type DefaultConfig struct {
-	Root string `toml:"root"`
-}
-
-// PromoteConfig represents promote behavior settings.
-type PromoteConfig struct {
-	From        string `toml:"from"`
-	To          string `toml:"to"`
-	AutoGitInit bool   `toml:"auto_git_init"`
-	AutoCommit  bool   `toml:"auto_commit"`
-}
-
-// HistoryConfig represents history tracking settings.
-type HistoryConfig struct {
-	Enabled bool `toml:"enabled"`
-	Max     int  `toml:"max"`
+	Root    string `toml:"root"`
+	Language string `toml:"language"`
 }
 
 // Validate checks if the configuration is valid.
@@ -43,20 +28,6 @@ func (c *Config) Validate() error {
 	if c.Default.Root != "" {
 		if _, exists := c.Roots[c.Default.Root]; !exists {
 			return domain.ErrConfigInvalidDefaultRoot
-		}
-	}
-
-	if c.Promote.From != "" {
-		if _, exists := c.Roots[c.Promote.From]; !exists {
-			return domain.NewError(domain.ErrCodeConfigInvalid, "Promote 'from' root does not exist").
-				WithHint("Set promote.from to one of the defined roots")
-		}
-	}
-
-	if c.Promote.To != "" {
-		if _, exists := c.Roots[c.Promote.To]; !exists {
-			return domain.NewError(domain.ErrCodeConfigInvalid, "Promote 'to' root does not exist").
-				WithHint("Set promote.to to one of the defined roots")
 		}
 	}
 
@@ -84,34 +55,26 @@ func (c *Config) GetDefaultRoot() string {
 // NewDefaultConfig creates a default configuration.
 // This is the single source of truth for default values.
 func NewDefaultConfig() *Config {
-	// Determine OS-specific default paths
+	// Determine OS-specific default paths using $HOME/ghqx
 	homeDir, _ := os.UserHomeDir()
 	var basePath string
-
+	
 	if homeDir != "" {
-		basePath = filepath.Join(homeDir, "src")
+		basePath = filepath.Join(homeDir, "ghqx")
 	} else {
-		basePath = filepath.Join("C:", "src")
+		// Fallback for systems where home dir cannot be determined
+		basePath = filepath.Join(".", "ghqx")
 	}
 
 	return &Config{
 		Roots: map[string]string{
-			"dev":     filepath.Join(basePath, "ghq-dev"),
-			"release": filepath.Join(basePath, "ghq-release"),
 			"sandbox": filepath.Join(basePath, "sandbox"),
+			"dev":     filepath.Join(basePath, "dev"),
+			"release": filepath.Join(basePath, "release"),
 		},
 		Default: DefaultConfig{
-			Root: "dev",
-		},
-		Promote: PromoteConfig{
-			From:        "sandbox",
-			To:          "dev",
-			AutoGitInit: true,
-			AutoCommit:  false,
-		},
-		History: HistoryConfig{
-			Enabled: true,
-			Max:     50,
+			Root: "sandbox",
+			Language: "ja",
 		},
 	}
 }

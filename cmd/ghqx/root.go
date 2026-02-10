@@ -1,46 +1,89 @@
 package main
 
 import (
-	"github.com/mi8bi/ghqx/internal/app"
+	"fmt"
+	"os"
+
 	"github.com/spf13/cobra"
+	"github.com/mi8bi/ghqx/internal/app"
+	"github.com/mi8bi/ghqx/internal/i18n" // Added missing import
+	"github.com/mi8bi/ghqx/internal/ui"
 )
 
 var (
 	configPath string
-	jsonOutput bool
-	dryRun     bool
-	rootFlag   string
+
+	// Global application instance
+	application *app.App
 )
+
+func main() {
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Fprint(os.Stderr, ui.FormatDetailedError(err))
+		os.Exit(1)
+	}
+}
 
 var rootCmd = &cobra.Command{
 	Use:   "ghqx",
-	Short: "ghqx - ghq-compatible workspace lifecycle manager",
-	Long: `ghqx extends ghq by managing multiple workspaces (dev/release/sandbox)
-and supporting lifecycle operations such as promote, undo, and status.`,
+	Short: i18n.T("root.command.short"),
+	Long:  i18n.T("root.command.long"),
 	SilenceUsage:  true,
 	SilenceErrors: true,
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		// If the command is 'config init', we don't try to load existing config.
+		// We set a default locale for its output.
+		if cmd == configInitCmd {
+			i18n.SetLocale(i18n.LocaleJA) // Default to Japanese for init output
+			return nil
+		}
+
+		// For all other commands, load the app and determine locale.
+		if err := loadApp(); err != nil {
+			return err
+		}
+
+		// Determine locale precedence: Env Var > Config > Default
+		targetLocale := i18n.LocaleJA // Default fallback
+
+		if lang := os.Getenv("GHQX_LANG"); lang != "" {
+			switch lang {
+			case "en", "en_US":
+				targetLocale = i18n.LocaleEN
+			case "ja", "ja_JP":
+				targetLocale = i18n.LocaleJA
+			}
+		} else if application.Config != nil && application.Config.Default.Language != "" { // Check application.Config for nil
+			switch application.Config.Default.Language {
+			case "en":
+				targetLocale = i18n.LocaleEN
+			case "ja":
+				targetLocale = i18n.LocaleJA
+			}
+		}
+		i18n.SetLocale(targetLocale)
+		return nil
+	},
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVar(&configPath, "config", "", "config file path")
-	rootCmd.PersistentFlags().BoolVar(&jsonOutput, "json", false, "output in JSON format")
-	rootCmd.PersistentFlags().BoolVar(&dryRun, "dry-run", false, "show what would be done without doing it")
-	rootCmd.PersistentFlags().StringVar(&rootFlag, "root", "", "target specific root")
+	rootCmd.PersistentFlags().StringVar(&configPath, "config", "", i18n.T("root.flag.config"))
 
 	rootCmd.AddCommand(statusCmd)
-	rootCmd.AddCommand(promoteCmd)
-	rootCmd.AddCommand(undoCmd)
 	rootCmd.AddCommand(cdCmd)
 	rootCmd.AddCommand(configCmd)
-	rootCmd.AddCommand(worktreeCmd)
 	rootCmd.AddCommand(tuiCmd)
+	rootCmd.AddCommand(getCmd)
+	rootCmd.AddCommand(doctorCmd)
+	rootCmd.AddCommand(cleanCmd)
 }
 
-// loadApp is a helper to load the app with config.
-func loadApp() (*app.App, error) {
-	application, err := app.NewFromConfigPath(configPath)
+// loadApp is a helper to load the app with config and set the global application variable.
+func loadApp() error {
+	var err error
+	application, err = app.NewFromConfigPath(configPath)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return application, nil
+	return nil
 }

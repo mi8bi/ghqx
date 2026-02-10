@@ -3,44 +3,48 @@ package main
 import (
 	"fmt"
 
+	"github.com/mi8bi/ghqx/internal/i18n"
+	"github.com/mi8bi/ghqx/internal/selector"
+	"github.com/mi8bi/ghqx/internal/status"
 	"github.com/spf13/cobra"
 )
 
 var cdCmd = &cobra.Command{
-	Use:   "cd <project-name>",
-	Short: "Print the path to a project for shell cd integration",
-	Long: `CD outputs the full path to a project, designed for shell integration.
-
-Usage with shell function (add to your .bashrc or .zshrc):
-
-  ghqx-cd() {
-    local path=$(ghqx cd "$1")
-    if [ -n "$path" ]; then
-      cd "$path"
-    fi
-  }
-
-Then use:
-  ghqx-cd myproject`,
-	Args: cobra.ExactArgs(1),
+	Use:   "cd",
+	Short: i18n.T("cd.command.short"),
+	Long:  i18n.T("cd.command.long"),
 	RunE: runCD,
 }
 
+func init() {
+}
+
 func runCD(cmd *cobra.Command, args []string) error {
-	app, err := loadApp()
+	if err := loadApp(); err != nil {
+		return err
+	}
+
+	opts := status.Options{}
+	defaultRootName := application.Config.GetDefaultRoot()
+
+	projects, err := application.Status.GetAll(opts, defaultRootName)
 	if err != nil {
 		return err
 	}
 
-	projectName := args[0]
-
-	project, err := app.Status.FindProject(projectName)
-	if err != nil {
-		return err
+	// Convert domain.Project to ProjectDisplay
+	displayProjects := make([]status.ProjectDisplay, len(projects))
+	for i, p := range projects {
+		displayProjects[i] = status.NewProjectDisplay(p)
 	}
 
-	// Output only the path for shell consumption
-	fmt.Println(project.Path)
-
-	return nil
+	// Always use interactive selection
+	selectedPath, err := selector.Run(displayProjects)
+	if err != nil {
+		return err // Error from Bubble Tea program
+	}
+	if selectedPath != "" {
+		fmt.Println(selectedPath)
+	}
+	return nil // If nothing selected, just exit without error
 }

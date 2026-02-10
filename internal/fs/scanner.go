@@ -3,7 +3,6 @@ package fs
 import (
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/mi8bi/ghqx/internal/domain"
 )
@@ -22,81 +21,57 @@ func (s *Scanner) ScanRoot(rootName domain.RootName, rootPath string, isSandbox 
 		return nil, domain.ErrRootDirNotExist(string(rootName), rootPath)
 	}
 
-	if isSandbox {
-		return s.scanSandbox(rootName, rootPath)
-	}
 	return s.scanGhqRoot(rootName, rootPath)
 }
 
-// scanSandbox scans a flat sandbox directory.
-func (s *Scanner) scanSandbox(rootName domain.RootName, rootPath string) ([]domain.Project, error) {
-	entries, err := os.ReadDir(rootPath)
-	if err != nil {
-		return nil, domain.ErrFSReadDir(err)
-	}
-
-	var projects []domain.Project
-	for _, entry := range entries {
-		if !entry.IsDir() {
-			continue
-		}
-
-		name := entry.Name()
-		projectPath := filepath.Join(rootPath, name)
-
-		hasGit := s.hasGitDir(projectPath)
-		projectType := domain.ProjectTypeSandbox
-		if hasGit {
-			projectType = domain.ProjectTypeSandboxGit
-		}
-
-		projects = append(projects, domain.Project{
-			Name:   name,
-			Root:   rootName,
-			Path:   projectPath,
-			Type:   projectType,
-			HasGit: hasGit,
-		})
-	}
-
-	return projects, nil
-}
-
-// scanGhqRoot scans a ghq-style hierarchical directory (host/owner/repo).
+// scanGhqRoot scans a directory recursively for git repositories.
 func (s *Scanner) scanGhqRoot(rootName domain.RootName, rootPath string) ([]domain.Project, error) {
 	var projects []domain.Project
 
 	err := filepath.Walk(rootPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			return nil // Skip errors
+			return nil // Skip errors (e.g., permission denied)
 		}
 
 		if !info.IsDir() {
-			return nil
+			return nil // Only interested in directories
 		}
 
-		// Check if this looks like a repository directory
-		if s.hasGitDir(path) {
-			relPath, _ := filepath.Rel(rootPath, path)
-			name := filepath.ToSlash(relPath)
-
-			projectType := domain.ProjectTypeDev
-			if rootName == "release" {
-				projectType = domain.ProjectTypeRelease
-			}
-
-			projects = append(projects, domain.Project{
-				Name:   name,
-				Root:   rootName,
-				Path:   path,
-				Type:   projectType,
-				HasGit: true,
-			})
-
-			return filepath.SkipDir // Don't descend into repositories
+		// Check if this directory is a Git repository
+		if !s.hasGitDir(path) {
+			return nil // Not a git repo, continue walking
 		}
 
-		return nil
+		// Calculate relative path from the rootPath
+		relPath, _ := filepath.Rel(rootPath, path)
+
+		// Use the relative path as the project name
+		projectName := filepath.ToSlash(relPath)
+		if projectName == "." || projectName == "" {
+			projectName = filepath.Base(path)
+		}
+
+		// Determine project type based on root name
+		projectType := domain.ProjectTypeDev
+		switch rootName {
+		case "sandbox":
+			projectType = domain.ProjectTypeSandbox
+		case "release":
+			projectType = domain.ProjectTypeRelease
+		}
+
+		projects = append(projects, domain.Project{
+			Name:        projectName,
+			DisplayName: domain.FormatDisplayName(projectName),
+			Root:        rootName,
+			Path:        path,
+			Zone:        domain.DetermineZone(rootName),
+			Type:        projectType,
+			HasGit:      true,
+		})
+
+		// Skip descending into this git repository
+		return filepath.SkipDir
 	})
 
 	if err != nil {
@@ -114,7 +89,7 @@ func (s *Scanner) hasGitDir(path string) bool {
 }
 
 // HasGitDir checks if a directory contains a .git subdirectory (public version).
-func (s *Scanner) HasGitDir(path string) bool {
+func (s Scanner) HasGitDir(path string) bool {
 	return s.hasGitDir(path)
 }
 
@@ -134,9 +109,19 @@ func IsSafeName(name string) bool {
 	// Disallow path separators and other dangerous characters
 	forbidden := []string{"/", "\\", ":", "*", "?", "\"", "<", ">", "|"}
 	for _, char := range forbidden {
-		if strings.Contains(name, char) {
+		if contains(name, char) {
 			return false
 		}
 	}
 	return true
+}
+
+// contains is a helper function for string containment check
+func contains(s, substr string) bool {
+	for i := 0; i <= len(s)-len(substr); i++ {
+		if s[i:i+len(substr)] == substr {
+			return true
+		}
+	}
+	return false
 }

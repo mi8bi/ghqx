@@ -6,8 +6,8 @@ import (
 )
 
 // RunStatus は status TUI を起動する
-func RunStatus(application *app.App, showWorktree bool) error {
-	model := NewStatusModel(application, showWorktree)
+func RunStatus(application *app.App) error {
+	model := NewStatusModel(application)
 
 	p := tea.NewProgram(
 		model,

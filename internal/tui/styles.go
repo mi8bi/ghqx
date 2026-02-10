@@ -1,6 +1,9 @@
 package tui
 
-import "github.com/charmbracelet/lipgloss"
+import (
+	"github.com/charmbracelet/lipgloss"
+	"github.com/mi8bi/ghqx/internal/i18n"
+)
 
 var (
 	// テーブルスタイル
@@ -31,7 +34,7 @@ var (
 	styleRelease = lipgloss.NewStyle().
 			Foreground(lipgloss.Color("204"))
 
-	// ステータススタイル
+	// ステータススタイル (Used by getStatusStyle)
 	styleClean = lipgloss.NewStyle().
 			Foreground(lipgloss.Color("42"))
 
@@ -82,6 +85,18 @@ func getZoneStyle(zone string) lipgloss.Style {
 	case "release":
 		return styleRelease
 	default:
+		return lipgloss.NewStyle()
+	}
+}
+
+// getStatusStyle はステータスに応じたスタイルを返す
+func getStatusStyle(status string) lipgloss.Style {
+	switch status {
+	case i18n.T("status.repo.clean"):
+		return styleClean
+	case i18n.T("status.repo.dirty"):
+		return styleDirty
+	default: // 未 git 管理, "-" など
 		return lipgloss.NewStyle()
 	}
 }

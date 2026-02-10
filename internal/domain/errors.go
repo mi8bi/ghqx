@@ -1,5 +1,10 @@
 package domain
 
+import (
+	"fmt"
+
+	"github.com/mi8bi/ghqx/internal/i18n"
+)
 // Common errors used across the application.
 // These provide consistent error messages and hints for users.
 
@@ -7,34 +12,34 @@ package domain
 var (
 	ErrConfigNotFoundAny = NewError(
 		ErrCodeConfigNotFound,
-		"No configuration file found",
-	).WithHint("Run 'ghqx config init' to create a config file")
+		i18n.T("error.config.notFoundAny.message"),
+	).WithHint(i18n.T("error.config.notFoundAny.hint"))
 
 	ErrConfigNotFoundAt = func(path string) *GhqxError {
 		return NewError(
 			ErrCodeConfigNotFound,
-			"Config file not found at specified path",
-		).WithHint("Check the path provided with --config flag").
+			i18n.T("error.config.notFoundAt.message"),
+		).WithHint(i18n.T("error.config.notFoundAt.hint")).
 			WithInternal("path: " + path)
 	}
 
 	ErrConfigInvalidTOML = func(cause error) *GhqxError {
 		return NewErrorWithCause(
 			ErrCodeConfigInvalid,
-			"Failed to parse config file",
+			i18n.T("error.config.invalidToml.message"),
 			cause,
-		).WithHint("Check the TOML syntax in your config file")
+		).WithHint(i18n.T("error.config.invalidToml.hint"))
 	}
 
 	ErrConfigNoRoots = NewError(
 		ErrCodeConfigInvalid,
-		"No roots defined in configuration",
-	).WithHint("Add at least one root in the [roots] section")
+		i18n.T("error.config.noRoots.message"),
+	).WithHint(i18n.T("error.config.noRoots.hint"))
 
 	ErrConfigInvalidDefaultRoot = NewError(
 		ErrCodeConfigInvalid,
-		"Default root does not exist in roots",
-	).WithHint("Set default.root to one of the defined roots")
+		i18n.T("error.config.invalidDefaultRoot.message"),
+	).WithHint(i18n.T("error.config.invalidDefaultRoot.hint"))
 )
 
 // Root errors
@@ -42,15 +47,15 @@ var (
 	ErrRootNotFound = func(name string) *GhqxError {
 		return NewError(
 			ErrCodeRootNotFound,
-			"Root not found: "+name,
-		).WithHint("Check your config.toml for available roots")
+			fmt.Sprintf(i18n.T("error.root.notFound.message"), name),
+		).WithHint(i18n.T("error.root.notFound.hint"))
 	}
 
 	ErrRootDirNotExist = func(name, path string) *GhqxError {
 		return NewError(
 			ErrCodeRootNotFound,
-			"Root directory does not exist: "+name,
-		).WithHint("Create the directory or update config.toml").
+			fmt.Sprintf(i18n.T("error.root.dirNotExist.message"), name),
+		).WithHint(i18n.T("error.root.dirNotExist.hint")).
 			WithInternal("path: " + path)
 	}
 )
@@ -60,102 +65,52 @@ var (
 	ErrProjectNotFound = func(name string) *GhqxError {
 		return NewError(
 			ErrCodeProjectNotFound,
-			"Project not found: "+name,
-		).WithHint("Use 'ghqx status' to see all available projects")
+			fmt.Sprintf(i18n.T("error.project.notFound.message"), name),
+		).WithHint(i18n.T("error.project.notFound.hint"))
 	}
 
 	ErrProjectNameInvalid = NewError(
 		ErrCodeInvalidPath,
-		"Invalid project name",
-	).WithHint("Project name contains forbidden characters")
+		i18n.T("error.project.nameInvalid.message"),
+	).WithHint(i18n.T("error.project.nameInvalid.hint"))
+
+	ErrArgumentRequired = NewError(
+		ErrCodeInvalidPath,
+		i18n.T("error.argument.required"),
+	)
 )
 
 // Git errors
 var (
 	ErrGitDirtyRepo = NewError(
 		ErrCodeDirtyRepo,
-		"Repository has uncommitted changes",
-	).WithHint("Commit or stash changes, or use --force")
+		i18n.T("error.git.dirtyRepo.message"),
+	).WithHint(i18n.T("error.git.dirtyRepo.hint"))
 
 	ErrGitTimeout = func(operation string) *GhqxError {
 		return NewError(
 			ErrCodeGitError,
-			"Git operation timed out: "+operation,
+			fmt.Sprintf(i18n.T("error.git.timeout.message"), operation),
 		).WithInternal("timeout exceeded")
 	}
 
 	ErrGitCommandFailed = func(operation string, cause error) *GhqxError {
 		return NewErrorWithCause(
 			ErrCodeGitError,
-			"Git operation failed: "+operation,
-			cause,
-		)
-	}
-
-	ErrGitWorktreeList = func(cause error) *GhqxError {
-		return NewErrorWithCause(
-			ErrCodeWorktreeError,
-			"Failed to list git worktrees",
-			cause,
-		).WithHint("Ensure git worktree is properly configured")
-	}
-)
-
-// Promote errors
-var (
-	ErrPromoteDestExists = func(path string) *GhqxError {
-		return NewError(
-			ErrCodePromoteFailed,
-			"Destination already exists",
-		).WithHint("Choose a different name or remove the existing directory").
-			WithInternal("path: " + path)
-	}
-
-	ErrPromoteSourceNotFound = func(name string) *GhqxError {
-		return NewError(
-			ErrCodeProjectNotFound,
-			"Project not found in source root: "+name,
-		).WithHint("Check project name and source root")
-	}
-
-	ErrPromoteMoveFailed = func(cause error) *GhqxError {
-		return NewErrorWithCause(
-			ErrCodePromoteFailed,
-			"Failed to move project",
+			fmt.Sprintf(i18n.T("error.git.commandFailed.message"), operation),
 			cause,
 		)
 	}
 )
 
-// Undo errors
-var (
-	ErrUndoDisabled = NewError(
-		ErrCodeUndoNotAvailable,
-		"History is disabled",
-	).WithHint("Enable history in config.toml")
 
-	ErrUndoNoHistory = NewError(
-		ErrCodeUndoNotAvailable,
-		"No promote history found",
-	).WithHint("Nothing to undo")
-
-	ErrUndoDestMissing = NewError(
-		ErrCodeUndoNotAvailable,
-		"Promoted project no longer exists at destination",
-	).WithHint("Cannot undo: project may have been moved or deleted")
-
-	ErrUndoSourceOccupied = NewError(
-		ErrCodeUndoNotAvailable,
-		"Source location is occupied",
-	).WithHint("Cannot undo: original location is no longer empty")
-)
 
 // Filesystem errors
 var (
 	ErrFSReadDir = func(cause error) *GhqxError {
 		return NewErrorWithCause(
 			ErrCodeFSError,
-			"Failed to read directory",
+			i18n.T("error.fs.readDir.message"),
 			cause,
 		)
 	}
@@ -163,7 +118,7 @@ var (
 	ErrFSCreateDir = func(cause error) *GhqxError {
 		return NewErrorWithCause(
 			ErrCodeFSError,
-			"Failed to create directory",
+			i18n.T("error.fs.createDir.message"),
 			cause,
 		)
 	}
@@ -171,8 +126,9 @@ var (
 	ErrFSScanRoot = func(cause error) *GhqxError {
 		return NewErrorWithCause(
 			ErrCodeFSError,
-			"Failed to scan root directory",
+			i18n.T("error.fs.scanRoot.message"),
 			cause,
 		)
 	}
 )
+

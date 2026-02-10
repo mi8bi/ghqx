@@ -27,24 +27,30 @@ func NewService(cfg *config.Config) *Service {
 
 // Options configures status scanning behavior.
 type Options struct {
-	CheckDirty     bool
-	LoadBranch     bool
-	CountWorktrees bool
-	RootFilter     string
+	CheckDirty bool
+	LoadBranch bool
 }
 
 // GetAll scans all roots and returns all projects.
-func (s *Service) GetAll(opts Options) ([]domain.Project, error) {
+func (s *Service) GetAll(opts Options, rootFilter ...string) ([]domain.Project, error) {
 	var allProjects []domain.Project
 	var mu sync.Mutex
 	var wg sync.WaitGroup
-	errChan := make(chan error, len(s.cfg.Roots))
 
-	for name, path := range s.cfg.Roots {
-		if opts.RootFilter != "" && name != opts.RootFilter {
-			continue
+	targetRoots := s.cfg.Roots
+	if len(rootFilter) > 0 && rootFilter[0] != "" {
+		rootName := rootFilter[0]
+		rootPath, exists := s.cfg.Roots[rootName]
+		if !exists {
+			return nil, domain.ErrRootNotFound(rootName)
 		}
+		targetRoots = map[string]string{rootName: rootPath}
+	}
 
+	var errors []error
+	var errMu sync.Mutex
+
+	for name, path := range targetRoots {
 		wg.Add(1)
 		go func(rootName string, rootPath string) {
 			defer wg.Done()
@@ -54,7 +60,9 @@ func (s *Service) GetAll(opts Options) ([]domain.Project, error) {
 
 			projects, err := s.scanner.ScanRoot(domain.RootName(rootName), rootPath, isSandbox)
 			if err != nil {
-				errChan <- err
+				errMu.Lock()
+				errors = append(errors, err)
+				errMu.Unlock()
 				return
 			}
 
@@ -64,7 +72,7 @@ func (s *Service) GetAll(opts Options) ([]domain.Project, error) {
 			}
 
 			// Enrich projects with git status if requested
-			if opts.CheckDirty || opts.LoadBranch || opts.CountWorktrees {
+			if opts.CheckDirty || opts.LoadBranch {
 				for i := range projects {
 					if projects[i].HasGit {
 						s.enrichProject(&projects[i], opts)
@@ -79,11 +87,10 @@ func (s *Service) GetAll(opts Options) ([]domain.Project, error) {
 	}
 
 	wg.Wait()
-	close(errChan)
 
 	// Return first error if any occurred
-	if err := <-errChan; err != nil {
-		return nil, err
+	if len(errors) > 0 {
+		return nil, errors[0]
 	}
 
 	return allProjects, nil
@@ -107,13 +114,6 @@ func (s *Service) enrichProject(project *domain.Project, opts Options) {
 			project.Branch = branch
 		}
 	}
-
-	if opts.CountWorktrees && project.HasGit {
-		count, err := s.git.CountWorktrees(project.Path)
-		if err == nil {
-			project.WorktreeCount = count
-		}
-	}
 }
 
 // FindProject finds a project by name across all roots.
@@ -130,9 +130,4 @@ func (s *Service) FindProject(name string) (*domain.Project, error) {
 	}
 
 	return nil, domain.ErrProjectNotFound(name)
-}
-
-// GetByRoot returns all projects in a specific root.
-func (s *Service) GetByRoot(rootName string) ([]domain.Project, error) {
-	return s.GetAll(Options{RootFilter: rootName})
 }

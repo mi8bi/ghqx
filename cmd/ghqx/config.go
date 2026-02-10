@@ -6,11 +6,12 @@ import (
 	"os"
 	"strings"
 
+	"github.com/spf13/cobra"
 	"github.com/mi8bi/ghqx/internal/config"
 	"github.com/mi8bi/ghqx/internal/domain"
+	"github.com/mi8bi/ghqx/internal/i18n" // Add this import
 	configtui "github.com/mi8bi/ghqx/internal/tui/config"
 	"github.com/mi8bi/ghqx/internal/ui"
-	"github.com/spf13/cobra"
 )
 
 var (
@@ -19,60 +20,27 @@ var (
 
 var configCmd = &cobra.Command{
 	Use:   "config",
-	Short: "Manage ghqx configuration",
+	Short: i18n.T("config.command.short"),
 }
 
 var configInitCmd = &cobra.Command{
 	Use:   "init",
-	Short: "Create a default configuration file",
-	Long: `Initialize a new ghqx configuration file.
-
-Interactive mode (default):
-  Prompts for each configuration value.
-  Press Enter to use default values shown in [brackets].
-
-Non-interactive mode (--yes):
-  Creates config with default values immediately.
-
-The config file will be created at:
-  ~/.config/ghqx/config.toml (Linux/macOS)
-  %USERPROFILE%\.config\ghqx\config.toml (Windows)
-
-Use --config to specify a different location.`,
+	Short: i18n.T("config.init.command.short"),
+	Long: i18n.T("config.init.command.long"),
 	RunE: runConfigInit,
 }
 
 var configShowCmd = &cobra.Command{
 	Use:   "show",
-	Short: "Show current configuration",
-	Long: `Display the current ghqx configuration in human-readable format.
-
-Shows:
-  - All configured roots
-  - Default settings
-  - Promote behavior
-  - History settings`,
+	Short: i18n.T("config.show.command.short"),
+	Long: i18n.T("config.show.command.long"),
 	RunE: runConfigShow,
 }
 
 var configEditCmd = &cobra.Command{
 	Use:   "edit",
-	Short: "Edit configuration interactively (TUI)",
-	Long: `Launch an interactive TUI editor for ghqx configuration.
-
-Features:
-  - Visual field editor with descriptions
-  - Real-time validation
-  - Undo changes before saving
-  - Japanese error messages
-
-Keybindings:
-  ↑↓ or j/k  - Navigate fields
-  Enter       - Edit selected field
-  Esc         - Cancel editing
-  Ctrl+S      - Save configuration
-  q           - Quit (warns if unsaved)
-  Ctrl+Q      - Force quit without saving`,
+	Short: i18n.T("config.edit.command.short"),
+	Long: i18n.T("config.edit.command.long"),
 	RunE: runConfigEdit,
 }
 
@@ -80,8 +48,8 @@ func init() {
 	configCmd.AddCommand(configInitCmd)
 	configCmd.AddCommand(configShowCmd)
 	configCmd.AddCommand(configEditCmd)
-
-	configInitCmd.Flags().BoolVar(&configInitYes, "yes", false, "non-interactive mode: use all defaults")
+	
+	configInitCmd.Flags().BoolVar(&configInitYes, "yes", false, i18n.T("config.init.flag.yes"))
 }
 
 func runConfigInit(cmd *cobra.Command, args []string) error {
@@ -101,7 +69,7 @@ func runConfigInit(cmd *cobra.Command, args []string) error {
 	if _, err := os.Stat(path); err == nil {
 		return domain.NewError(
 			domain.ErrCodeConfigInvalid,
-			"Config file already exists: "+path,
+			fmt.Sprintf(i18n.T("config.error.fileAlreadyExists"), path),
 		).WithHint("Delete the existing file or use a different path with --config")
 	}
 
@@ -110,7 +78,7 @@ func runConfigInit(cmd *cobra.Command, args []string) error {
 	if configInitYes {
 		// Non-interactive mode
 		cfg = config.NewDefaultConfig()
-		fmt.Println(ui.FormatInfo("Using default configuration"))
+		fmt.Println(ui.FormatInfo(i18n.T("config.init.useDefault")))
 	} else {
 		// Interactive mode
 		var err error
@@ -120,27 +88,32 @@ func runConfigInit(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	// Create root directories before saving config
+	fmt.Println(ui.FormatInfo(i18n.T("config.init.creatingDirs")))
+	if err := config.EnsureRootDirectories(cfg); err != nil {
+		return err
+	}
+
 	// Save config
 	if err := loader.Save(cfg, path); err != nil {
 		return err
 	}
 
-	fmt.Print(ui.FormatSuccess("Config file created: " + path))
-	fmt.Println("\n設定内容:")
+	fmt.Print(ui.FormatSuccess(i18n.T("config.init.fileCreated") + ": " + path))
+	fmt.Println("\n" + i18n.T("config.init.summaryHeader"))
 	printConfigSummary(cfg)
 
 	return nil
 }
 
 func runConfigShow(cmd *cobra.Command, args []string) error {
-	app, err := loadApp()
-	if err != nil {
+	if err := loadApp(); err != nil {
 		return err
 	}
 
-	fmt.Println("ghqx 設定")
+	fmt.Println(i18n.T("config.show.title"))
 	fmt.Println("==================")
-	printConfigSummary(app.Config)
+	printConfigSummary(application.Config)
 
 	return nil
 }
@@ -169,8 +142,8 @@ func runConfigEdit(cmd *cobra.Command, args []string) error {
 
 // promptForConfig は対話的に設定を入力する
 func promptForConfig() (*config.Config, error) {
-	fmt.Println("ghqx 設定を対話的に作成します")
-	fmt.Println("各項目でEnterを押すとデフォルト値を使用します")
+	fmt.Println(i18n.T("config.prompt.intro1"))
+	fmt.Println(i18n.T("config.prompt.intro2"))
 	fmt.Println()
 
 	reader := bufio.NewReader(os.Stdin)
@@ -179,63 +152,31 @@ func promptForConfig() (*config.Config, error) {
 	cfg := &config.Config{
 		Roots:   make(map[string]string),
 		Default: config.DefaultConfig{},
-		Promote: config.PromoteConfig{},
-		History: config.HistoryConfig{},
 	}
 
 	// Roots
-	fmt.Println("■ ワークスペースルート")
-
-	devPath := promptWithDefault(reader, "dev ルートのパス", defaults.Roots["dev"])
+	fmt.Println(i18n.T("config.prompt.section.roots"))
+	
+	devPath := promptWithDefault(reader, i18n.T("config.prompt.path.dev"), defaults.Roots["dev"])
 	cfg.Roots["dev"] = devPath
 
-	releasePath := promptWithDefault(reader, "release ルートのパス", defaults.Roots["release"])
+	releasePath := promptWithDefault(reader, i18n.T("config.prompt.path.release"), defaults.Roots["release"])
 	cfg.Roots["release"] = releasePath
 
-	sandboxPath := promptWithDefault(reader, "sandbox ルートのパス", defaults.Roots["sandbox"])
+	sandboxPath := promptWithDefault(reader, i18n.T("config.prompt.path.sandbox"), defaults.Roots["sandbox"])
 	cfg.Roots["sandbox"] = sandboxPath
 
 	fmt.Println()
 
 	// Default root
-	fmt.Println("■ デフォルト設定")
-	defaultRoot := promptWithDefault(reader, "デフォルトルート (dev/release/sandbox)", defaults.Default.Root)
+	fmt.Println(i18n.T("config.prompt.section.default"))
+	defaultRoot := promptWithDefault(reader, i18n.T("config.prompt.defaultRoot"), defaults.Default.Root)
 	cfg.Default.Root = defaultRoot
 
-	fmt.Println()
-
-	// Promote settings
-	fmt.Println("■ プロモート設定")
-	promoteFrom := promptWithDefault(reader, "プロモート元", defaults.Promote.From)
-	cfg.Promote.From = promoteFrom
-
-	promoteTo := promptWithDefault(reader, "プロモート先", defaults.Promote.To)
-	cfg.Promote.To = promoteTo
-
-	autoGitInit := promptYesNo(reader, "Git 未管理プロジェクトに git init を実行", defaults.Promote.AutoGitInit)
-	cfg.Promote.AutoGitInit = autoGitInit
-
-	autoCommit := promptYesNo(reader, "プロモート後に自動コミット", defaults.Promote.AutoCommit)
-	cfg.Promote.AutoCommit = autoCommit
+	defaultLanguage := promptWithDefault(reader, i18n.T("config.prompt.defaultLanguage"), defaults.Default.Language)
+	cfg.Default.Language = defaultLanguage
 
 	fmt.Println()
-
-	// History settings
-	fmt.Println("■ 履歴設定")
-	historyEnabled := promptYesNo(reader, "undo 履歴を有効化", defaults.History.Enabled)
-	cfg.History.Enabled = historyEnabled
-
-	if historyEnabled {
-		maxStr := promptWithDefault(reader, "最大履歴数", fmt.Sprintf("%d", defaults.History.Max))
-		var max int
-		fmt.Sscanf(maxStr, "%d", &max)
-		if max <= 0 {
-			max = defaults.History.Max
-		}
-		cfg.History.Max = max
-	} else {
-		cfg.History.Max = 0
-	}
 
 	return cfg, nil
 }
@@ -245,7 +186,7 @@ func promptWithDefault(reader *bufio.Reader, prompt, defaultValue string) string
 	fmt.Printf("%s [%s]: ", prompt, defaultValue)
 	input, _ := reader.ReadString('\n')
 	input = strings.TrimSpace(input)
-
+	
 	if input == "" {
 		return defaultValue
 	}
@@ -272,23 +213,12 @@ func promptYesNo(reader *bufio.Reader, prompt string, defaultValue bool) bool {
 
 // printConfigSummary は設定の要約を表示する
 func printConfigSummary(cfg *config.Config) {
-	fmt.Println("\n[Roots]")
+	fmt.Println("\n" + i18n.T("config.summary.section.roots"))
 	for name, path := range cfg.Roots {
 		fmt.Printf("  %-10s = %s\n", name, path)
 	}
 
-	fmt.Println("\n[Default]")
+	fmt.Println("\n" + i18n.T("config.summary.section.default"))
 	fmt.Printf("  root       = %s\n", cfg.Default.Root)
-
-	fmt.Println("\n[Promote]")
-	fmt.Printf("  from       = %s\n", cfg.Promote.From)
-	fmt.Printf("  to         = %s\n", cfg.Promote.To)
-	fmt.Printf("  auto_init  = %t\n", cfg.Promote.AutoGitInit)
-	fmt.Printf("  auto_commit= %t\n", cfg.Promote.AutoCommit)
-
-	fmt.Println("\n[History]")
-	fmt.Printf("  enabled    = %t\n", cfg.History.Enabled)
-	if cfg.History.Enabled {
-		fmt.Printf("  max        = %d\n", cfg.History.Max)
-	}
+	fmt.Printf("  language   = %s\n", cfg.Default.Language)
 }

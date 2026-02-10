@@ -2,7 +2,6 @@ package app
 
 import (
 	"github.com/mi8bi/ghqx/internal/config"
-	"github.com/mi8bi/ghqx/internal/promote"
 	"github.com/mi8bi/ghqx/internal/status"
 )
 
@@ -10,7 +9,6 @@ import (
 type App struct {
 	Config  *config.Config
 	Status  *status.Service
-	Promote *promote.Service
 }
 
 // New creates a new application instance.
@@ -18,7 +16,6 @@ func New(cfg *config.Config) *App {
 	return &App{
 		Config:  cfg,
 		Status:  status.NewService(cfg),
-		Promote: promote.NewService(cfg),
 	}
 }
 
