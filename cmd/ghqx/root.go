@@ -32,31 +32,20 @@ var rootCmd = &cobra.Command{
 	SilenceUsage:  true,
 	SilenceErrors: true,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		// If the command is 'config init', we don't try to load existing config.
-		// We set a default locale for its output.
+		// Special case: config init doesn't require an existing app instance
 		if cmd == configInitCmd {
 			i18n.SetLocale(i18n.LocaleJA) // Default to Japanese for init output
 			return nil
 		}
 
-		// For all other commands, load the app and determine locale.
+		// Load app configuration for all other commands
 		if err := loadApp(); err != nil {
 			return err
 		}
 
-		// Determine locale precedence: Env Var > OS Language > Default (Japanese)
-		targetLocale := getOSLanguageLocale()
-
-		// Override with environment variable if set
-		if lang := os.Getenv("GHQX_LANG"); lang != "" {
-			switch lang {
-			case "en", "en_US":
-				targetLocale = i18n.LocaleEN
-			case "ja", "ja_JP":
-				targetLocale = i18n.LocaleJA
-			}
-		}
-		i18n.SetLocale(targetLocale)
+		// Determine and set the locale based on environment
+		locale := determineLocale()
+		i18n.SetLocale(locale)
 		return nil
 	},
 }
@@ -107,60 +96,80 @@ func init() {
 	rootCmd.AddCommand(modeCmd)
 }
 
-// initLocale initializes the locale before any command descriptions are rendered
+// initLocale initializes the locale before any command descriptions are rendered.
 func initLocale() {
-	// Determine locale precedence: Env Var > OS Language > Default (Japanese)
-	targetLocale := getOSLanguageLocale()
-
-	// Override with environment variable if set
-	if lang := os.Getenv("GHQX_LANG"); lang != "" {
-		switch lang {
-		case "en", "en_US":
-			targetLocale = i18n.LocaleEN
-		case "ja", "ja_JP":
-			targetLocale = i18n.LocaleJA
-		}
-	}
-	i18n.SetLocale(targetLocale)
+	locale := determineLocale()
+	i18n.SetLocale(locale)
 }
 
-// getOSLanguageLocale determines the locale based on OS environment.
-func getOSLanguageLocale() i18n.Locale {
-	// Check environment variables in priority order
+// determineLocale determines the appropriate locale based on environment variables.
+// Priority: GHQX_LANG environment variable > OS environment > Default (Japanese)
+func determineLocale() i18n.Locale {
+	// 1. Check GHQX_LANG environment variable (explicit app setting)
+	if lang := os.Getenv("GHQX_LANG"); lang != "" {
+		if locale := parseLocaleFromEnv(lang); locale != "" {
+			return locale
+		}
+	}
 
-	// 1. Check LC_ALL (highest priority)
+	// 2. Determine from OS environment variables
+	return getOSLanguageLocale()
+}
+
+// parseLocaleFromEnv converts a language string to locale.
+func parseLocaleFromEnv(lang string) i18n.Locale {
+	switch lang {
+	case "en", "en_US":
+		return i18n.LocaleEN
+	case "ja", "ja_JP":
+		return i18n.LocaleJA
+	default:
+		return ""
+	}
+}
+
+// getOSLanguageLocale determines the locale based on OS environment variables.
+// Checks in standard order: LC_ALL > LANG > LANGUAGE > Default (Japanese)
+func getOSLanguageLocale() i18n.Locale {
+	// 1. Check LC_ALL (highest priority in Unix/Linux/macOS)
 	if lang := os.Getenv("LC_ALL"); lang != "" {
-		if strings.Contains(strings.ToLower(lang), "ja") {
-			return i18n.LocaleJA
-		} else if strings.Contains(strings.ToLower(lang), "en") {
-			return i18n.LocaleEN
+		if locale := matchLocaleString(lang); locale != "" {
+			return locale
 		}
 	}
 
 	// 2. Check LANG (Unix/Linux/macOS standard)
 	if lang := os.Getenv("LANG"); lang != "" {
-		if strings.Contains(strings.ToLower(lang), "ja") {
-			return i18n.LocaleJA
-		} else if strings.Contains(strings.ToLower(lang), "en") {
-			return i18n.LocaleEN
+		if locale := matchLocaleString(lang); locale != "" {
+			return locale
 		}
 	}
 
-	// 3. Check LANGUAGE (Linux)
+	// 3. Check LANGUAGE (Linux, can contain colon-separated list)
 	if lang := os.Getenv("LANGUAGE"); lang != "" {
-		// LANGUAGE can contain colon-separated list
-		if strings.Contains(strings.ToLower(lang), "ja") {
-			return i18n.LocaleJA
-		} else if strings.Contains(strings.ToLower(lang), "en") {
-			return i18n.LocaleEN
+		if locale := matchLocaleString(lang); locale != "" {
+			return locale
 		}
 	}
 
-	// Default to Japanese if none found
+	// Default to Japanese if no OS locale is detected
 	return i18n.LocaleJA
 }
 
-// loadApp is a helper to load the app with config and set the global application variable.
+// matchLocaleString checks if a string contains language hints and returns appropriate locale.
+func matchLocaleString(str string) i18n.Locale {
+	lowerStr := strings.ToLower(str)
+	if strings.Contains(lowerStr, "ja") {
+		return i18n.LocaleJA
+	}
+	if strings.Contains(lowerStr, "en") {
+		return i18n.LocaleEN
+	}
+	return ""
+}
+
+// loadApp initializes the global application instance with configuration.
+// It loads config from the specified path (or default location if not specified).
 func loadApp() error {
 	var err error
 	application, err = app.NewFromConfigPath(configPath)

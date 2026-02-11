@@ -3,21 +3,23 @@ package fs
 import (
 	"os"
 	"path/filepath"
-	"strings"
 	"sort"
+	"strings"
 
 	"github.com/mi8bi/ghqx/internal/domain"
 )
 
 // Scanner handles filesystem operations for project discovery.
+// It traverses directory trees to find git repositories and structured directories.
 type Scanner struct{}
 
-// NewScanner creates a new filesystem scanner.
+// NewScanner creates a new filesystem scanner instance.
 func NewScanner() *Scanner {
 	return &Scanner{}
 }
 
-// ScanRoot scans a root directory and returns all projects found.
+// ScanRoot scans a root directory and returns all discovered projects.
+// Validates the root path exists and recursively searches for projects.
 func (s *Scanner) ScanRoot(rootName domain.RootName, rootPath string) ([]domain.Project, error) {
 	if _, err := os.Stat(rootPath); os.IsNotExist(err) {
 		return nil, domain.ErrRootDirNotExist(string(rootName), rootPath)
@@ -26,13 +28,15 @@ func (s *Scanner) ScanRoot(rootName domain.RootName, rootPath string) ([]domain.
 	return s.scanGhqRoot(rootName, rootPath)
 }
 
-// scanGhqRoot scans a directory recursively for projects (git repos or plain directories).
+// scanGhqRoot recursively scans a directory for projects (git repos or structured directories).
+// Returns a filtered list of actual projects, not intermediate directories.
 func (s *Scanner) scanGhqRoot(rootName domain.RootName, rootPath string) ([]domain.Project, error) {
 	var potentialProjects []domain.Project
 
+	// Walk directory tree to find projects
 	err := filepath.Walk(rootPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			return nil // Skip errors (e.g., permission denied)
+			return nil // Skip directories we can't access (permission denied, etc.)
 		}
 
 		if !info.IsDir() {
@@ -46,6 +50,7 @@ func (s *Scanner) scanGhqRoot(rootName domain.RootName, rootPath string) ([]doma
 
 		hasGit := s.hasGitDir(path)
 
+		// Compute project name relative to root
 		relPath, _ := filepath.Rel(rootPath, path)
 		projectName := filepath.ToSlash(relPath)
 		if projectName == "." || projectName == "" {
@@ -68,16 +73,16 @@ func (s *Scanner) scanGhqRoot(rootName domain.RootName, rootPath string) ([]doma
 		}
 
 		potentialProjects = append(potentialProjects, domain.Project{
-			Name:        projectName,
-			DisplayName: domain.FormatDisplayName(projectName),
-			Root:        rootName,
-			Path:        path,
-			WorkspaceType: domain.DetermineWorkspaceType(rootName), // Updated from Zone and DetermineZone
-			Type:        projectType,
-			HasGit:      hasGit,
+			Name:          projectName,
+			DisplayName:   domain.FormatDisplayName(projectName),
+			Root:          rootName,
+			Path:          path,
+			WorkspaceType: domain.DetermineWorkspaceType(rootName),
+			Type:          projectType,
+			HasGit:        hasGit,
 		})
 
-		// If it's a Git repository, skip descending into it
+		// If it's a Git repository, skip descending into it to avoid nested checks
 		if hasGit {
 			return filepath.SkipDir
 		}
@@ -88,45 +93,42 @@ func (s *Scanner) scanGhqRoot(rootName domain.RootName, rootPath string) ([]doma
 		return nil, domain.ErrFSScanRoot(err)
 	}
 
-	// Post-process to filter out intermediate non-Git directories
+	// Post-process: filter out intermediate directories that aren't actual projects
 	var actualProjects []domain.Project
 
-	// Sort potential projects by path length (descending) to easily identify "leaf" projects
+	// Sort by path length descending to identify leaf projects easily
 	sort.Slice(potentialProjects, func(i, j int) bool {
 		return len(potentialProjects[i].Path) > len(potentialProjects[j].Path)
 	})
 
-	// Use a map to keep track of paths that are already part of a valid project
-	// This helps filter out parent directories that are not projects themselves
+	// Use a map to track paths that are already part of a valid project
 	isSubPathOfProject := make(map[string]bool)
 
 	for _, p := range potentialProjects {
-		// If this path is already part of a deeper project, skip it
+		// Skip if this path is a subpath of an already discovered project
 		if isSubPathOfProject[p.Path] {
 			continue
 		}
 
 		if p.HasGit {
 			actualProjects = append(actualProjects, p)
-			// Mark all ancestors of this Git repo as "part of a project"
+			// Mark all parent directories as part of this project
 			markAncestors(rootPath, p.Path, isSubPathOfProject)
 		} else {
-			// For non-Git projects, we only add them if they are the "repo" part
-			// of a host/user/repo structure, and not an intermediate host or user directory.
-			// This heuristic is based on ghq's cloning structure.
+			// For non-git directories, only include if they form a complete host/user/repo path
+			// e.g., github.com/user/repo has 3 components
 			relPathSegments := strings.Split(p.Name, "/")
-			if len(relPathSegments) == 3 { // e.g., github.com/user/repo
+			if len(relPathSegments) == 3 {
 				actualProjects = append(actualProjects, p)
 				markAncestors(rootPath, p.Path, isSubPathOfProject)
 			}
 		}
 	}
-	
-	// Reverse the order to get original sorting or sort by DisplayName if desired
-	sort.Slice(actualProjects, func(i, j int) bool {
-		return actualProjects[i].Name < actualProjects[j].Name // Sort by Name ascending
-	})
 
+	// Sort final results by name for consistent output
+	sort.Slice(actualProjects, func(i, j int) bool {
+		return actualProjects[i].Name < actualProjects[j].Name
+	})
 
 	return actualProjects, nil
 }
@@ -139,7 +141,6 @@ func markAncestors(rootPath, projectPath string, isSubPathOfProject map[string]b
 		currentPath = filepath.Dir(currentPath)
 	}
 }
-
 
 // hasGitDir checks if a directory contains a .git subdirectory.
 func (s *Scanner) hasGitDir(path string) bool {
