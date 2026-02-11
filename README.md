@@ -1,6 +1,19 @@
+<p align="center">
+  <a href="https://github.com/mi8bi/ghqx">
+    <img src="./assets/ogp.png" alt="OGP Image">
+  </a>
+</p>
 # ghqx - ghq-compatible workspace manager
 
 ghqx extends ghq by managing multiple workspaces (dev/release/sandbox).
+
+[![Build Status](https://github.com/mi8bi/ghqx/actions/workflows/test.yml/badge.svg)](https://github.com/mi8bi/ghqx/actions/workflows/codecov.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/mi8bi/ghqx)](https://goreportcard.com/report/github.com/mi8bi/ghqx)
+[![codecov](https://codecov.io/gh/mi8bi/ghqx/branch/main/graph/badge.svg)](https://codecov.io/gh/mi8bi/ghqx)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Latest Release](https://img.shields.io/github/v/release/mi8bi/ghqx)](https://github.com/mi8bi/ghqx/releases/latest)
+[![GitHub Stars](https://img.shields.io/github/stars/mi8bi/ghqx?style=social)](https://github.com/mi8bi/ghqx/stargazers)
+
 
 ## Features
 
