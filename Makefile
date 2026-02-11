@@ -23,10 +23,12 @@ install-release:
 	go install $(BUILD_FLAGS) ./cmd/ghqx
 
 # Release build with GoReleaser (snapshot/local)
+# Creates multi-platform binaries without publishing to GitHub
 release-snapshot:
-	goreleaser release --snapshot --rm-dist
+	goreleaser release --snapshot --clean
 
 # Release build with GoReleaser (requires git tag)
+# Publishes binaries and release notes to GitHub
 release:
 	goreleaser release --clean
 
