@@ -72,10 +72,10 @@ func init() {
 	rootCmd.AddCommand(statusCmd)
 	rootCmd.AddCommand(cdCmd)
 	rootCmd.AddCommand(configCmd)
-	rootCmd.AddCommand(tuiCmd)
 	rootCmd.AddCommand(getCmd)
 	rootCmd.AddCommand(doctorCmd)
 	rootCmd.AddCommand(cleanCmd)
+	rootCmd.AddCommand(modeCmd)
 }
 
 // loadApp is a helper to load the app with config and set the global application variable.

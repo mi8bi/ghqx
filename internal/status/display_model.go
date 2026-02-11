@@ -5,38 +5,46 @@ import (
 	"github.com/mi8bi/ghqx/internal/i18n"
 )
 
-// ProjectDisplay は表示用のプロジェクト情報を保持します
+// ProjectDisplay represents a project for display purposes.
+// It contains formatted strings suitable for CLI/TUI output.
 type ProjectDisplay struct {
-	Repo        string // 短縮されたリポジトリ名 (例: user/repo)
-	Zone        string // ゾーン (例: sandbox)
-	GitManaged  string // Git管理状態 (例: 管理 / 未管理)
-	Status      string // リポジトリの状態 (例: clean / dirty)
-	FullPath    string // プロジェクトのフルパス
-	RawProject  domain.Project // 元のプロジェクトデータ
+	Repo       string         // Short repository name (e.g., user/repo)
+	Workspace  string         // Workspace name (e.g., sandbox, dev, release)
+	GitManaged string         // Git management status (e.g., "管理" / "Managed")
+	Status     string         // Repository status (e.g., "clean" / "dirty")
+	FullPath   string         // Full filesystem path to the project
+	RawProject domain.Project // Original project data for detailed operations
 }
 
-// NewProjectDisplay は domain.Project から ProjectDisplay を作成します
+// NewProjectDisplay creates a ProjectDisplay from a domain.Project.
+// It applies i18n translations and formatting for display.
 func NewProjectDisplay(p domain.Project) ProjectDisplay {
-	gitManaged := i18n.T("status.git.managed")
-	if !p.HasGit {
-		gitManaged = i18n.T("status.git.unmanaged")
-	}
-
-	status := i18n.T("status.repo.clean")
-	if p.Dirty {
-		status = i18n.T("status.repo.dirty")
-	}
-	// For non-git repos, status is not applicable
-	if !p.HasGit {
-		status = "-"
-	}
-
 	return ProjectDisplay{
-		Repo:        p.DisplayName,
-		Zone:        string(p.Zone),
-		GitManaged:  gitManaged,
-		Status:      status,
-		FullPath:    p.Path,
-		RawProject:  p,
+		Repo:       p.DisplayName,
+		Workspace:  string(p.WorkspaceType),
+		GitManaged: formatGitManaged(p.HasGit),
+		Status:     formatStatus(p.HasGit, p.Dirty),
+		FullPath:   p.Path,
+		RawProject: p,
 	}
+}
+
+// formatGitManaged returns a localized string for git management status.
+func formatGitManaged(hasGit bool) string {
+	if hasGit {
+		return i18n.T("status.git.managed")
+	}
+	return i18n.T("status.git.unmanaged")
+}
+
+// formatStatus returns a localized string for repository status.
+func formatStatus(hasGit, isDirty bool) string {
+	if !hasGit {
+		return "-" // Not applicable for non-git directories
+	}
+
+	if isDirty {
+		return i18n.T("status.repo.dirty")
+	}
+	return i18n.T("status.repo.clean")
 }

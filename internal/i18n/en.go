@@ -25,22 +25,9 @@ It diagnoses the following items:
 		"doctor.check.git.hint.install": "Install git",
 
 		// cd Command
-		"cd.command.short": "Interactively select a project and change directory",
-		"cd.command.long": `cd displays a TUI to select a project and outputs its full path.
-This is intended to be used with a shell function to change the current directory.
-
-Shell function example (.bashrc or .zshrc):
-
-  ghqx-cd() {
-    local path
-    path=$(ghqx cd)
-    if [ -n "$path" ]; then
-      cd "$path"
-    fi
-  }
-
-Usage:
-  ghqx-cd`,
+		"cd.command.short": "Select a project or directory and output its path",
+		"cd.command.long": `cd displays an interactive TUI to select a project or directory and outputs its full path.
+This command cannot directly change your shell's current directory. To do that, you need to use shell integration.`,
 
 		// Errors (Messages and Hints)
 		"error.config.notFoundAny.message":        "No configuration file found",
@@ -93,7 +80,7 @@ Usage:
 
 		// Status table headers
 		"status.header.name":        "Repo",
-		"status.header.zone":        "Zone",
+		"status.header.workspace":   "Workspace", // Renamed from status.header.zone
 		"status.header.gitManaged":  "GitManaged",
 		"status.header.status":      "Status",
 		"status.header.root":        "Root",
@@ -114,7 +101,7 @@ Usage:
 		"status.detail.basicInfo":       "■ Basic Info",
 		"status.detail.name":            "Name",
 		"status.detail.path":            "Path",
-		"status.detail.zone":            "Zone",
+		"status.detail.workspace":       "Workspace", // Renamed from status.detail.zone
 		"status.detail.root":            "Root",
 		"status.detail.gitInfo":         "■ Git Info",
 		"status.detail.gitManaged":      "Git Managed",
@@ -127,7 +114,11 @@ Usage:
 
 		// Selector
 		"selector.title":                "Select a project",
-		"selector.help":                 "↑↓: Move | Enter: Select | Esc/q: Quit",
+		"selector.search.placeholder":   "Filter projects...",
+		"selector.search.label":         "Search:",
+		"selector.search.noMatches":     "No matching projects found.",
+		// "selector.help":                 "↑↓: Move | Enter: Select | Esc/q: Quit", Removed this line
+		"selector.helpWithPecoSearch":       "↑↓/jk: Move | Enter: Select | Esc/q: Quit", // New key
 
 		"doctor.result.ok":              "[OK]",
 		"doctor.result.ng":              "[NG]",
@@ -152,10 +143,13 @@ Usage:
 		"config.summary.section.default": "[Default]",
 
 		// Get Command
-		"get.repositoryExists":           "Repository already exists in %s zone",
+		"get.command.short":              "Clone a repository into a workspace",
+		"get.command.long":               "Clones the specified repository into a workspace using ghq. The default workspace can be set with `ghqx mode`.",
+		"get.repositoryExists":           "Repository already exists in %s workspace", // Updated from zone
 		"get.continueFetch":              "Continuing fetch...",
-		"get.cloning":                    "Cloning %s to %s zone...",
-		"get.cloneSuccess":               "Successfully cloned %s to %s",
+		"get.cloning":                    "Cloning %s to %s workspace...",         // Updated from zone
+		"get.cloneSuccess":               "Successfully cloned %s to %s workspace", // Updated from zone
+		"get.flag.workspace":             "target workspace (sandbox/dev/release)", // Updated from get.flag.zone
 
 		// Root Command
 		"root.command.short":             "ghqx - ghq-compatible workspace manager",
@@ -164,18 +158,9 @@ Usage:
 
 		// Status Command
 		"status.command.short":           "Show the state of all projects across all roots",
-		"status.command.long":            "Status quickly visualizes workspace state.\n\nProjects are classified by zone:\n  sandbox\n  dev\n  release\n\nAdditional information:\n  - Git managed or not\n  - Dirty/clean status\n\nTUI mode (Terminal UI):\n  --tui flag launches an interactive terminal interface.",
+		"status.command.long":            "Status quickly visualizes workspace state.\n\nProjects are classified by workspace:\n  sandbox\n  dev\n  release\n\nAdditional information:\n  - Git managed or not\n  - Dirty/clean status", // Updated from zone
 		"status.flag.verbose":            "show detailed information including paths",
 		"status.flag.tui":                "launch interactive TUI mode",
-
-		// Get Command
-		"get.command.short":              "Clone a repository using ghq to a specified zone",
-		"get.command.long":               "Get clones a repository using ghq into a specified workspace zone.\n\nThe repository can be specified as:\n  - Full URL: https://github.com/user/repo\n  - Short form: github.com/user/repo\n  - Very short: user/repo (assumes github.com)\n\nBy default, repositories are cloned to the sandbox zone.\nUse --zone to specify a different target zone.\n\nExamples:\n  ghqx get user/repo                    # Clone to sandbox\n  ghqx get user/repo --zone dev         # Clone to dev",
-		"get.flag.zone":                  "target zone (sandbox/dev/release)",
-
-		// TUI Command
-		"tui.command.short":              "Launch interactive TUI (Terminal UI)",
-		"tui.command.long":               "TUI launches an interactive terminal interface for ghqx.\n\nFeatures:\n  - Visual project list with keyboard navigation\n  - Real-time status updates\n\nKeybindings:\n  ↑↓ or j/k  - Navigate projects\n  r           - Refresh project list\n  q or Ctrl+C - Quit",
 
 		// Config Command
 		"config.command.short":           "Manage ghqx configuration",
@@ -203,5 +188,15 @@ Usage:
 		"clean.deleting.noConfigFound":   "Configuration file not found. Skipping deletion.",
 		"clean.deleting.noConfigPath":    "Configuration file path unknown. Skipping deletion.",
 		"clean.complete":                 "ghqx clean up complete.",
+
+		// Mode Command
+		"mode.command.short":             "Switch default workspace mode (dev/release/sandbox)",
+		"mode.command.long":              "Interactively selects and sets the default workspace mode (dev, release, or sandbox) for ghqx operations.",
+		"mode.selector.title":            "Select default workspace mode",
+		"mode.selector.help":             "↑↓: Move | Enter: Select | Esc/q: Quit",
+		"mode.error.noRoots":             "No roots defined in configuration. Cannot select a mode.",
+		"mode.noChange":                  "Default mode is already set to the selected one. No change made.",
+		"mode.success":                   "Default mode set to: ",
+		"mode.aborted":                   "Mode selection aborted.",
 	})
 }

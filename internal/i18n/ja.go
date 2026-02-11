@@ -25,22 +25,9 @@ func loadJapaneseMessages() {
 		"doctor.check.git.hint.install": "git をインストールしてください",
 
 		// cd Command
-		"cd.command.short": "プロジェクトを対話的に選択し、ディレクトリを移動します",
-		"cd.command.long": `cd は TUI を表示してプロジェクトを選択し、そのフルパスを出力します。
-シェルの関数と組み合わせて使うことで、カレントディレクトリを移動できます。
-
-シェルの設定例 (.bashrc or .zshrc):
-
-  ghqx-cd() {
-    local path
-    path=$(ghqx cd)
-    if [ -n "$path" ]; then
-      cd "$path"
-    fi
-  }
-
-使用例:
-  ghqx-cd`,
+		"cd.command.short": "プロジェクトまたはディレクトリを選択し、そのパスを出力",
+		"cd.command.long": `cd は対話的な TUI を表示してプロジェクトまたはディレクトリを選択し、そのフルパスを出力します。
+このコマンドは直接シェルのカレントディレクトリを変更することはできません。そのためには、シェル連携を使用する必要があります。`,
 
 		// Errors (Messages and Hints)
 		"error.config.notFoundAny.message":        "設定ファイルが見つかりません",
@@ -93,7 +80,7 @@ func loadJapaneseMessages() {
 
 		// Status table headers
 		"status.header.name":        "Repo",
-		"status.header.zone":        "Zone",
+		"status.header.workspace":   "ワークスペース", // Renamed from status.header.zone
 		"status.header.gitManaged":  "Git管理",
 		"status.header.status":      "状態",
 		"status.header.root":        "Root",
@@ -114,7 +101,7 @@ func loadJapaneseMessages() {
 		"status.detail.basicInfo":       "■ 基本情報",
 		"status.detail.name":            "名前",
 		"status.detail.path":            "パス",
-		"status.detail.zone":            "ゾーン",
+		"status.detail.workspace":       "ワークスペース", // Renamed from status.detail.zone
 		"status.detail.root":            "ルート",
 		"status.detail.gitInfo":         "■ Git 情報",
 		"status.detail.gitManaged":      "Git管理",
@@ -127,7 +114,11 @@ func loadJapaneseMessages() {
 
 		// Selector
 		"selector.title":                "プロジェクトを選択してください",
-		"selector.help":                 "↑↓: 移動 | Enter: 選択 | Esc/q: 終了",
+		"selector.search.placeholder":   "プロジェクトをフィルタリング...",
+		"selector.search.label":         "検索:",
+		"selector.search.noMatches":     "一致するプロジェクトは見つかりませんでした。",
+		// "selector.help":                 "↑↓: 移動 | Enter: 選択 | Esc/q: 終了", Removed this line
+		"selector.helpWithPecoSearch":       "↑↓: 移動 | Enter: 選択 | Esc: 終了", // New key
 
 		"doctor.result.ok":              "[OK]",
 		"doctor.result.ng":              "[NG]",
@@ -152,10 +143,13 @@ func loadJapaneseMessages() {
 		"config.summary.section.default": "[Default]",
 
 		// Get Command
-		"get.repositoryExists":           "リポジトリは既に %s ゾーンに存在します",
+		"get.command.short":              "リポジトリを取得し、ワークスペースにクローンします",
+		"get.command.long":               "指定されたリポジトリをghqを使用してワークスペースにクローンします。デフォルトのワークスペースはghqx modeで設定できます。",
+		"get.repositoryExists":           "リポジトリは既に %s ワークスペースに存在します", // Updated from zone
 		"get.continueFetch":              "取得を続行します...",
-		"get.cloning":                    "リポジトリ %s を %s ゾーンにクローンしています...",
-		"get.cloneSuccess":               "%s を %s ゾーンにクローンしました",
+		"get.cloning":                    "リポジトリ %s を %s ワークスペースにクローンしています...",         // Updated from zone
+		"get.cloneSuccess":               "%s を %s ワークスペースにクローンしました", // Updated from zone
+		"get.flag.workspace":             "ターゲットワークスペース (sandbox/dev/release)", // Updated from get.flag.zone
 
 		// Root Command
 		"root.command.short":             "ghqx - ghq互換ワークスペースマネージャー",
@@ -164,18 +158,9 @@ func loadJapaneseMessages() {
 
 		// Status Command
 		"status.command.short":           "すべてのルートにおける全プロジェクトの状態を表示",
-		"status.command.long":            "status はワークスペースの状態を素早く可視化します。\n\nプロジェクトはゾーンによって分類されます:\n  sandbox\n  dev\n  release\n\n追加情報:\n  - Git管理されているか\n  - Dirty/clean 状態\n\nTUI モード (ターミナルUI):\n  --tui フラグは対話型ターミナルインターフェースを起動します。",
+		"status.command.long":            "status はワークスペースの状態を素早く可視化します。\n\nプロジェクトはワークスペースによって分類されます:\n  sandbox\n  dev\n  release\n\n追加情報:\n  - Git管理されているか\n  - Dirty/clean 状態", // Updated from zone
 		"status.flag.verbose":            "パスを含む詳細情報を表示",
 		"status.flag.tui":                "対話型 TUI モードを起動",
-
-		// Get Command
-		"get.command.short":              "ghq を使って指定ゾーンにリポジトリをクローン",
-		"get.command.long":               "Get は ghq を使って指定されたワークスペースゾーンにリポジトリをクローンします。\n\nリポジトリは以下の形式で指定できます:\n  - 完全な URL: https://github.com/user/repo\n  - 短縮形: github.com/user/repo\n  - 超短縮形: user/repo (github.com を仮定)\n\nデフォルトでは、リポジトリは sandbox ゾーンにクローンされます。\n別のターゲットゾーンを指定するには --zone を使用します。\n\n例:\n  ghqx get user/repo      # sandbox にクローン\n  ghqx get user/repo --zone dev # dev にクローン",
-		"get.flag.zone":                  "ターゲットゾーン (sandbox/dev/release)",
-
-		// TUI Command
-		"tui.command.short":              "対話型 TUI (ターミナルUI) を起動",
-		"tui.command.long":               "TUI は ghqx の対話型ターミナルインターフェースを起動します。\n\n機能:\n  - キーボード操作による視覚的なプロジェクトリスト\n  - リアルタイムなステータス更新\n\nキーバインド:\n  ↑↓ or j/k  - プロジェクトをナビゲート\n  r           - プロジェクトリストを再読込\n  q or Ctrl+C - 終了",
 
 		// Config Command
 		"config.command.short":           "ghqx の設定を管理",
@@ -203,5 +188,15 @@ func loadJapaneseMessages() {
 		"clean.deleting.noConfigFound":   "設定ファイルが見つかりません。削除をスキップします。",
 		"clean.deleting.noConfigPath":    "設定ファイルのパスが不明です。削除をスキップします。",
 		"clean.complete":                 "ghqx クリーンアップが完了しました。",
+
+		// Mode Command
+		"mode.command.short":             "デフォルトのワークスペースモードを切り替えます (dev/release/sandbox)",
+		"mode.command.long":              "ghqx 操作のデフォルトワークスペースモード (dev, release, または sandbox) を対話的に選択し設定します。",
+		"mode.selector.title":            "デフォルトのワークスペースモードを選択してください",
+		"mode.selector.help":             "↑↓: 移動 | Enter: 選択 | Esc/q: 終了",
+		"mode.error.noRoots":             "設定にルートが定義されていません。モードを選択できません。",
+		"mode.noChange":                  "デフォルトモードは既に選択されたモードに設定されています。変更はありません。",
+		"mode.success":                   "デフォルトモードを次のものに設定しました: ",
+		"mode.aborted":                   "モード選択は中止されました。",
 	})
 }

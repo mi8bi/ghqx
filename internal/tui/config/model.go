@@ -145,7 +145,7 @@ func (m Model) handleEditKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	field := m.editor.Fields[m.cursor]
 
 	switch msg.String() {
-	case "esc":
+	case "esc", "q": // Added 'q' for canceling selection
 		// キャンセル
 		m.state = EditStateList
 		m.editValue = ""
@@ -160,34 +160,59 @@ func (m Model) handleEditKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			} else {
 				m.editValue = "true"
 			}
+		} else if field.Type == FieldTypeSelection {
+			// Selection 型は Enter で確定し、編集モードを終了
+			m.editor.UpdateField(m.cursor, m.editValue)
+			m.state = EditStateList
+			m.editValue = ""
+			return m, nil
 		}
+		// For other types, "enter" confirms and exits edit mode
 		m.editor.UpdateField(m.cursor, m.editValue)
 		m.state = EditStateList
 		m.editValue = ""
 		return m, nil
 
-	case "backspace":
-		if len(m.editValue) > 0 {
-			m.editValue = m.editValue[:len(m.editValue)-1]
-		}
-		return m, nil
-
-	case "space":
-		// bool 型は space で toggle
-		if field.Type == FieldTypeBool {
-			if m.editValue == "true" {
-				m.editValue = "false"
-			} else {
-				m.editValue = "true"
+	case "left", "right", " ": // Left/Right arrows and space to cycle options
+		if field.Type == FieldTypeSelection {
+			currentIdx := -1
+			for i, opt := range field.Options {
+				if opt == m.editValue {
+					currentIdx = i
+					break
+				}
 			}
-		} else {
+
+			if msg.String() == "left" {
+				if currentIdx <= 0 { // Cycle backward
+					m.editValue = field.Options[len(field.Options)-1]
+				} else {
+					m.editValue = field.Options[currentIdx-1]
+				}
+			} else { // "right" or "space"
+				if currentIdx == -1 || currentIdx >= len(field.Options)-1 { // Cycle forward
+					m.editValue = field.Options[0]
+				} else {
+					m.editValue = field.Options[currentIdx+1]
+				}
+			}
+			return m, nil
+		}
+		// Fall through for other types, if 'space' was meant for them
+		if field.Type == FieldTypeString && msg.String() == " " {
 			m.editValue += " "
 		}
 		return m, nil
 
+	case "backspace":
+		if field.Type == FieldTypeString && len(m.editValue) > 0 { // Only allow backspace for string type
+			m.editValue = m.editValue[:len(m.editValue)-1]
+		}
+		return m, nil
+
 	default:
-		// 文字入力
-		if len(msg.String()) == 1 {
+		// 文字入力 (FieldTypeString のみ)
+		if field.Type == FieldTypeString && len(msg.String()) == 1 {
 			m.editValue += msg.String()
 		}
 		return m, nil
@@ -239,11 +264,15 @@ func (m Model) View() string {
 // renderField はフィールドを描画する
 func (m Model) renderField(field Field, selected bool) string {
 	name := styleFieldName.Render(field.Name)
-	
+
 	var value string
 	if m.state == EditStateEdit && selected {
 		// 編集中
-		value = styleEditInput.Render("> " + m.editValue + "_")
+		if field.Type == FieldTypeSelection {
+			value = styleEditInput.Render(fmt.Sprintf("< %s >", m.editValue)) // Visual indicator for selection
+		} else {
+			value = styleEditInput.Render("> " + m.editValue + "_")
+		}
 	} else {
 		value = styleFieldValue.Render(field.Value)
 	}
@@ -266,9 +295,11 @@ func (m Model) renderHelp() string {
 	case EditStateEdit:
 		field := m.editor.Fields[m.cursor]
 		if field.Type == FieldTypeBool {
-			help = "Enter/Space: 切替 | Esc: キャンセル"
+			help = "Enter/Space: 切替 | Esc/q: キャンセル"
+		} else if field.Type == FieldTypeSelection {
+			help = "←→: 移動 | Enter: 確定 | Esc/q: キャンセル" // Updated help for selection
 		} else {
-			help = "Enter: 確定 | Esc: キャンセル | Backspace: 削除"
+			help = "Enter: 確定 | Esc/q: キャンセル | Backspace: 削除"
 		}
 	default:
 		help = "↑↓/jk: 移動 | Enter: 編集 | Ctrl+S: 保存 | q: 終了"

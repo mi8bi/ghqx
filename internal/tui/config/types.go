@@ -2,6 +2,7 @@ package configtui
 
 import (
 	"strconv"
+	"sort" // Added this import
 
 	"github.com/mi8bi/ghqx/internal/config"
 )
@@ -23,6 +24,7 @@ type Field struct {
 	DefaultValue string     // デフォルト値
 	Description string      // 説明
 	Type        FieldType   // フィールドタイプ
+	Options     []string    // FieldTypeSelection の場合に選択肢を保持
 }
 
 // FieldType はフィールドの種類
@@ -32,6 +34,7 @@ const (
 	FieldTypeString FieldType = iota
 	FieldTypeBool
 	FieldTypeInt
+	FieldTypeSelection // Added this
 )
 
 // ConfigEditor は設定エディタのデータ
@@ -56,6 +59,13 @@ func NewConfigEditor(cfg *config.Config, configPath string) *ConfigEditor {
 
 // buildFields は編集可能なフィールドを構築する
 func (e *ConfigEditor) buildFields() {
+	// Get sorted root names for selection options
+	var rootNames []string
+	for name := range e.Config.Roots {
+		rootNames = append(rootNames, name)
+	}
+	sort.Strings(rootNames)
+
 	e.Fields = []Field{
 		{
 			Name:        "dev ルート",
@@ -87,7 +97,8 @@ func (e *ConfigEditor) buildFields() {
 			Value:       e.Config.Default.Root,
 			DefaultValue: "dev",
 			Description: "デフォルトで使用するルート",
-			Type:        FieldTypeString,
+			Type:        FieldTypeSelection, // Changed to FieldTypeSelection
+			Options:     rootNames,          // Populated with root names
 		},
 	}
 }

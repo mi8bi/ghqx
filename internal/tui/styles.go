@@ -23,7 +23,7 @@ var (
 				Background(lipgloss.Color("240")).
 				Foreground(lipgloss.Color("230"))
 
-	// ゾーンスタイル
+	// ワークスペーススタイル (Renamed from ゾーンスタイル)
 	styleSandbox = lipgloss.NewStyle().
 			Foreground(lipgloss.Color("214")).
 			Bold(true)
@@ -75,9 +75,9 @@ var (
 			PaddingTop(1)
 )
 
-// getZoneStyle はゾーンに応じたスタイルを返す
-func getZoneStyle(zone string) lipgloss.Style {
-	switch zone {
+// getWorkspaceStyle はワークスペースに応じたスタイルを返す (Renamed from getZoneStyle)
+func getWorkspaceStyle(workspace string) lipgloss.Style { // Renamed parameter
+	switch workspace {
 	case "sandbox":
 		return styleSandbox
 	case "dev":

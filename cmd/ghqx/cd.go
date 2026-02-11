@@ -13,38 +13,57 @@ var cdCmd = &cobra.Command{
 	Use:   "cd",
 	Short: i18n.T("cd.command.short"),
 	Long:  i18n.T("cd.command.long"),
-	RunE: runCD,
+	RunE:  runCD,
 }
 
-func init() {
-}
-
+// runCD launches an interactive TUI to select a project and outputs its path.
+// The path is printed to stdout and can be used with shell integration
+// to change the current directory.
 func runCD(cmd *cobra.Command, args []string) error {
 	if err := loadApp(); err != nil {
 		return err
 	}
 
-	opts := status.Options{}
-	defaultRootName := application.Config.GetDefaultRoot()
-
-	projects, err := application.Status.GetAll(opts, defaultRootName)
+	// Load projects from the default workspace
+	projects, err := loadProjectsForSelection()
 	if err != nil {
 		return err
 	}
 
-	// Convert domain.Project to ProjectDisplay
-	displayProjects := make([]status.ProjectDisplay, len(projects))
-	for i, p := range projects {
-		displayProjects[i] = status.NewProjectDisplay(p)
+	// Display interactive selector
+	selectedPath, err := selector.Run(projects)
+	if err != nil {
+		return err
 	}
 
-	// Always use interactive selection
-	selectedPath, err := selector.Run(displayProjects)
-	if err != nil {
-		return err // Error from Bubble Tea program
-	}
+	// Output selected path to stdout
 	if selectedPath != "" {
 		fmt.Println(selectedPath)
 	}
-	return nil // If nothing selected, just exit without error
+
+	return nil
+}
+
+// loadProjectsForSelection loads all projects from the default root
+// and converts them to display format for the selector.
+func loadProjectsForSelection() ([]status.ProjectDisplay, error) {
+	opts := status.Options{
+		CheckDirty: false, // Not needed for cd operation
+		LoadBranch: false, // Not needed for cd operation
+	}
+
+	// Filter by default root to reduce clutter
+	defaultRoot := application.Config.GetDefaultRoot()
+	rawProjects, err := application.Status.GetAll(opts, defaultRoot)
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert to display format
+	displayProjects := make([]status.ProjectDisplay, len(rawProjects))
+	for i, p := range rawProjects {
+		displayProjects[i] = status.NewProjectDisplay(p)
+	}
+
+	return displayProjects, nil
 }
