@@ -24,13 +24,6 @@ func NewClient() *Client {
 	}
 }
 
-// NewClientWithTimeout creates a new git client with a custom timeout duration.
-func NewClientWithTimeout(timeout time.Duration) *Client {
-	return &Client{
-		timeout: timeout,
-	}
-}
-
 // IsDirty checks if a repository has uncommitted changes.
 // Returns true if there are staged or unstaged modifications.
 func (c *Client) IsDirty(repoPath string) (bool, error) {
@@ -69,50 +62,4 @@ func (c *Client) GetBranch(repoPath string) (string, error) {
 	}
 
 	return strings.TrimSpace(string(output)), nil
-}
-
-// Init initializes a new git repository in the given directory.
-func (c *Client) Init(repoPath string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), c.timeout)
-	defer cancel()
-
-	cmd := exec.CommandContext(ctx, "git", "init")
-	cmd.Dir = repoPath
-
-	if err := cmd.Run(); err != nil {
-		if ctx.Err() == context.DeadlineExceeded {
-			return domain.ErrGitTimeout("init")
-		}
-		return domain.ErrGitCommandFailed("init", err)
-	}
-
-	return nil
-}
-
-// Commit stages all changes and creates a commit with the given message.
-func (c *Client) Commit(repoPath, message string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), c.timeout*2)
-	defer cancel()
-
-	// Stage all changes
-	addCmd := exec.CommandContext(ctx, "git", "add", ".")
-	addCmd.Dir = repoPath
-	if err := addCmd.Run(); err != nil {
-		return domain.ErrGitCommandFailed("add", err)
-	}
-
-	// Create commit
-	commitCmd := exec.CommandContext(ctx, "git", "commit", "-m", message)
-	commitCmd.Dir = repoPath
-	if err := commitCmd.Run(); err != nil {
-		return domain.ErrGitCommandFailed("commit", err)
-	}
-
-	return nil
-}
-
-// HasGit checks if the git command is available in the system PATH.
-func HasGit() bool {
-	cmd := exec.Command("git", "--version")
-	return cmd.Run() == nil
 }

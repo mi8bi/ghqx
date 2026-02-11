@@ -10,6 +10,41 @@ import (
 	"github.com/mi8bi/ghqx/internal/fs"
 )
 
+func TestGetAllAndFindProject(t *testing.T) {
+	tmp, err := ioutil.TempDir("", "ghqx-status-test")
+	if err != nil {
+		t.Fatalf("tempdir: %v", err)
+	}
+	defer os.RemoveAll(tmp)
+
+	// create github.com/user/repo structure
+	repo := filepath.Join(tmp, "github.com", "user", "repo")
+	if err := os.MkdirAll(repo, 0755); err != nil {
+		t.Fatalf("mkdir: %v", err)
+	}
+
+	cfg := &config.Config{Roots: map[string]string{"sandbox": tmp}, Default: config.DefaultConfig{Root: "sandbox"}}
+	s := NewService(cfg)
+
+	projects, err := s.GetAll(Options{})
+	if err != nil {
+		t.Fatalf("GetAll failed: %v", err)
+	}
+	if len(projects) == 0 {
+		t.Fatalf("expected projects found")
+	}
+
+	// FindProject should locate by name
+	name := projects[0].Name
+	p, err := s.FindProject(name)
+	if err != nil {
+		t.Fatalf("FindProject failed: %v", err)
+	}
+	if p.Name != name {
+		t.Fatalf("FindProject returned wrong project")
+	}
+}
+
 func TestDetermineTargetRoots(t *testing.T) {
 	cfg := &config.Config{Roots: map[string]string{"dev": "/tmp/dev", "sandbox": "/tmp/s"}}
 	s := &Service{cfg: cfg}
@@ -57,5 +92,3 @@ func TestGetAllScansTempRoot(t *testing.T) {
 		t.Fatalf("expected at least one project from scan")
 	}
 }
-
-// no helper needed; use fs.NewScanner() directly

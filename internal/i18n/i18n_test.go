@@ -2,7 +2,14 @@ package i18n
 
 import "testing"
 
-func TestRegisterSetAndTranslate(t *testing.T) {
+func TestEnglishLocaleLoadsAndRegister(t *testing.T) {
+	// Basic load via SetLocale
+	SetLocale(LocaleEN)
+	got := T("root.command.short")
+	if got == "MISSING_TRANSLATION: root.command.short" {
+		t.Fatalf("expected English message to be present")
+	}
+
 	// Backup state
 	prevLocale := currentLocale
 	prevMessages := make(map[Locale]map[string]string)
@@ -28,7 +35,6 @@ func TestRegisterSetAndTranslate(t *testing.T) {
 	// Missing key should fallback to english or return MISSING_TRANSLATION
 	SetLocale(LocaleJA)
 	RegisterMessages(LocaleEN, map[string]string{"only.en": "enval"})
-	// ensure missing in ja but present in en
 	if got := T("only.en"); got != "enval" {
 		t.Fatalf("fallback to en failed, got %q", got)
 	}
