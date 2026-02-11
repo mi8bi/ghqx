@@ -19,7 +19,6 @@ type Model struct {
 	cursor           int
 	selected         string // FullPath of the selected project
 	quitting         bool
-	searchMode       bool // Whether we're in search mode (typing in text input)
 }
 
 // NewModel creates a new model for the selector.
@@ -37,7 +36,6 @@ func NewModel(projects []status.ProjectDisplay) Model {
 		textInput:        ti,
 		cursor:           0,
 		quitting:         false,
-		searchMode:       true, // Start in search mode
 	}
 }
 
@@ -61,26 +59,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		if keyStr == "esc" {
-			if m.searchMode && m.textInput.Value() != "" {
-				// Clear search text
-				m.textInput.SetValue("")
-				m.applyFilter()
-				return m, nil
-			}
 			m.quitting = true
 			return m, tea.Quit
-		}
-
-		// Mode toggle
-		if keyStr == "tab" || keyStr == "shift+tab" {
-			m.searchMode = !m.searchMode
-			if m.searchMode {
-				m.textInput.Focus()
-				return m, textinput.Blink
-			} else {
-				m.textInput.Blur()
-				return m, nil
-			}
 		}
 
 		// Selection
@@ -91,12 +71,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 
-		// Mode-specific handling
-		if m.searchMode {
-			return m.handleSearchMode(msg)
-		} else {
-			return m.handleNavigationMode(keyStr)
-		}
+		// Navigation and search handling
+		return m.handleInput(msg)
 
 	case tea.WindowSizeMsg:
 		return m, nil
@@ -105,8 +81,31 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-// handleSearchMode handles input when in search mode
-func (m Model) handleSearchMode(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+// handleInput handles all input in peco-like mode
+// Always in "search mode" with navigation via arrow keys
+func (m Model) handleInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	keyStr := msg.String()
+
+	// Handle navigation keys
+	switch keyStr {
+	case "up", "k":
+		if m.cursor > 0 {
+			m.cursor--
+		} else if len(m.filteredProjects) > 0 {
+			m.cursor = len(m.filteredProjects) - 1
+		}
+		return m, nil
+
+	case "down", "j":
+		if m.cursor < len(m.filteredProjects)-1 {
+			m.cursor++
+		} else if len(m.filteredProjects) > 0 {
+			m.cursor = 0
+		}
+		return m, nil
+	}
+
+	// All other input goes to the search box
 	oldValue := m.textInput.Value()
 
 	// Update the text input
@@ -121,33 +120,6 @@ func (m Model) handleSearchMode(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	}
 
 	return m, cmd
-}
-
-// handleNavigationMode handles input when in navigation mode
-func (m Model) handleNavigationMode(keyStr string) (tea.Model, tea.Cmd) {
-	switch keyStr {
-	case "up", "k":
-		if m.cursor > 0 {
-			m.cursor--
-		} else if len(m.filteredProjects) > 0 {
-			m.cursor = len(m.filteredProjects) - 1
-		}
-
-	case "down", "j":
-		if m.cursor < len(m.filteredProjects)-1 {
-			m.cursor++
-		} else if len(m.filteredProjects) > 0 {
-			m.cursor = 0
-		}
-
-	case "/":
-		// Enter search mode
-		m.searchMode = true
-		m.textInput.Focus()
-		return m, textinput.Blink
-	}
-
-	return m, nil
 }
 
 // applyFilter filters the projects based on the current search query
@@ -243,13 +215,6 @@ func (m *Model) renderSearchInput(s *strings.Builder) {
 		Render(i18n.T("selector.search.label") + " ")
 	s.WriteString(filterLabel)
 
-	// Add visual indicator if in search mode
-	if m.searchMode {
-		s.WriteString(lipgloss.NewStyle().
-			Foreground(lipgloss.Color("226")).
-			Render("● "))
-	}
-
 	s.WriteString(m.textInput.View())
 
 	// Match count
@@ -278,15 +243,15 @@ func (m *Model) renderProjectList(s *strings.Builder) {
 	// Project items
 	for i, p := range m.filteredProjects {
 		cursor := "  "
-		if m.cursor == i && !m.searchMode {
+		if m.cursor == i {
 			cursor = "❯ "
 		}
 
 		line := fmt.Sprintf("%s%-40s  %s", cursor, p.Repo,
 			lipgloss.NewStyle().Foreground(lipgloss.Color("240")).Render(p.Workspace))
 
-		if m.cursor == i && !m.searchMode {
-			// Highlight selected item only when not in search mode
+		if m.cursor == i {
+			// Highlight selected item
 			highlighted := lipgloss.NewStyle().
 				Background(lipgloss.Color("24")).
 				Foreground(lipgloss.Color("255")).
@@ -303,12 +268,7 @@ func (m *Model) renderProjectList(s *strings.Builder) {
 func (m *Model) renderHelp(s *strings.Builder) {
 	s.WriteString("\n")
 
-	var helpText string
-	if m.searchMode {
-		helpText = "Tab/Shift+Tab: ナビゲーションモード | Esc: クリア/終了 | Enter: 選択"
-	} else {
-		helpText = "↑↓/jk: 移動 | /: 検索 | Tab/Shift+Tab: 検索モード | Enter: 選択 | Esc: 終了"
-	}
+	helpText := i18n.T("selector.helpWithPecoSearch")
 
 	help := lipgloss.NewStyle().
 		Foreground(lipgloss.Color("241")).
