@@ -7,8 +7,8 @@ ghqx extends ghq by managing multiple workspaces (dev/release/sandbox).
 - **Project status** across all workspaces
 - **Shell integration** for `cd` command
 - **Configuration management** (interactive init, viewing, and TUI editor)
-- **Terminal UI (TUI)** for interactive project listing and navigation
 - **Zone-aware cloning** with `ghqx get`
+- **Default workspace mode selection** with `ghqx mode`
 
 ## Installation
 
@@ -32,9 +32,6 @@ ghqx status
 
 # Verbose view with full paths
 ghqx status -v
-
-# Launch TUI mode
-ghqx status --tui
 ```
 
 Output includes:
@@ -42,29 +39,23 @@ Output includes:
 - Zone (sandbox/dev/release)
 - Git managed status
 - Clean/dirty status
-
-### `ghqx tui`
-Launch the interactive Terminal UI. This provides a visual project list with keyboard navigation.
-
-```bash
-ghqx tui
-```
-
-**Keybindings:**
-- **↑↓** or **j/k** - Navigate through projects
-- **d** - Toggle detail view for selected project
-- **r** - Refresh project list
-- **q** or **Ctrl+C** - Quit
+- Non-git managed directories are also shown.
 
 ### `ghqx cd` (Shell Integration)
 
-The `ghqx cd` command launches an interactive TUI to select a project and then prints the selected project's directory path to standard output. To actually change directories, you need to use shell integration.
+`ghqx cd` launches an interactive Terminal UI to select a project or directory and then prints its full path to standard output. This command cannot directly change your shell's current directory. To do that, you need to use shell integration as described below.
+
+**Keybindings:**
+- **↑↓** or **j/k** - Navigate through projects
+- **/** - Start searching
+- **Enter** - Select project and exit
+- **Esc** or **Ctrl+C** - Quit without selecting
 
 **1. Bash / Zsh:**
 
 Add the following function to your `.bashrc` or `.zshrc` file:
 ```bash
-ghqx-cd() {
+ghqxc() {
   local path
   path=$(ghqx cd)
   if [ -n "$path" ]; then
@@ -75,14 +66,14 @@ ghqx-cd() {
 Usage:
 ```bash
 # This will open the TUI to select a project
-ghqx-cd
+ghqxc
 ```
 
 **2. PowerShell:**
 
 Add the following function to your PowerShell profile (usually `$PROFILE`):
 ```powershell
-function ghqx-cd {
+function ghqxc {
   $path = (ghqx cd)
   if ($path) {
     Set-Location $path
@@ -92,8 +83,18 @@ function ghqx-cd {
 Usage:
 ```powershell
 # This will open the TUI to select a project
-ghqx-cd
+ghqxc
 ```
+
+### `ghqx mode`
+Select and set the default workspace mode.
+
+This command provides an interactive TUI to choose the default root for certain `ghqx` operations (e.g., `ghqx get` without specifying `--zone`).
+
+**Keybindings:**
+- **↑↓** or **j/k** - Navigate through options
+- **Enter** - Select mode and exit
+- **Esc** or **Ctrl+C** - Quit without selecting
 
 ### `ghqx get <repository>`
 Clones a repository into a specified workspace zone using `ghq`.
@@ -103,10 +104,10 @@ The repository can be specified as:
 - Short form: `github.com/user/repo`
 - User/repo: `user/repo` (assumes github.com)
 
-By default, repositories are cloned to the `sandbox` zone.
+By default, repositories are cloned to the configured default zone (`ghqx mode` can change this).
 
 ```bash
-# Clone to sandbox (default)
+# Clone to default zone (e.g., dev if configured)
 ghqx get user/repo
 
 # Clone to dev zone
@@ -126,7 +127,7 @@ Creates a new configuration file interactively.
 Displays the current configuration.
 
 **`ghqx config edit`**
-Launches an interactive TUI to edit the configuration file.
+Launches an interactive TUI to edit the configuration file. The default root is selected via a TUI.
 
 ### `ghqx clean`
 Resets `ghqx` to its initial state by deleting all configuration and managed repositories.
@@ -179,8 +180,8 @@ ghqx/
 │   ├── cd.go
 │   ├── config.go
 │   ├── get.go
-│   ├── tui.go
-│   └── clean.go
+│   ├── clean.go
+│   └── mode.go
 ├── internal/
 │   ├── app/           # Application orchestration
 │   ├── config/        # Config loading & validation
@@ -189,9 +190,9 @@ ghqx/
 │   ├── git/           # Git operations
 │   ├── ghq/           # ghq command client
 │   ├── i18n/          # Internationalization
-│   ├── selector/      # TUI project selector
+│   ├── selector/      # TUI project selector (used by ghqx cd)
 │   ├── status/        # Status scanning logic
-│   ├── tui/           # Main TUI components
+│   ├── tui/           # Main TUI components (used by ghqx status --tui)
 │   └── ui/            # CLI output formatting
 ├── go.mod
 ├── Makefile

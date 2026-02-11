@@ -27,7 +27,7 @@ func NewClient(cfg *config.Config) *Client {
 // GetOptions は ghq get コマンドのオプション
 type GetOptions struct {
 	Repository string // リポジトリURL または短縮形
-	Zone       string // 取得先のzone (sandbox/dev/release)
+	Workspace  string // 取得先のワークスペース (sandbox/dev/release) - Renamed from Zone
 }
 
 // Get は ghq get コマンドを実行してリポジトリを取得する
@@ -40,10 +40,10 @@ func (c *Client) Get(opts GetOptions) error {
 		).WithHint("Install ghq: https://github.com/x-motemen/ghq")
 	}
 
-	// zone に対応する root を取得
-	rootPath, exists := c.cfg.GetRoot(opts.Zone)
+	// ワークスペースに対応する root を取得 - Renamed from zone
+	rootPath, exists := c.cfg.GetRoot(opts.Workspace) // Updated opts.Zone to opts.Workspace
 	if !exists {
-		return domain.ErrRootNotFound(opts.Zone)
+		return domain.ErrRootNotFound(opts.Workspace) // Updated opts.Zone to opts.Workspace
 	}
 
 	// コンテキストとタイムアウト設定

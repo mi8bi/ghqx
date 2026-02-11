@@ -8,7 +8,7 @@ import (
 // ProjectDisplay は表示用のプロジェクト情報を保持します
 type ProjectDisplay struct {
 	Repo        string // 短縮されたリポジトリ名 (例: user/repo)
-	Zone        string // ゾーン (例: sandbox)
+	Workspace   string // Renamed from Zone (例: sandbox)
 	GitManaged  string // Git管理状態 (例: 管理 / 未管理)
 	Status      string // リポジトリの状態 (例: clean / dirty)
 	FullPath    string // プロジェクトのフルパス
@@ -33,7 +33,7 @@ func NewProjectDisplay(p domain.Project) ProjectDisplay {
 
 	return ProjectDisplay{
 		Repo:        p.DisplayName,
-		Zone:        string(p.Zone),
+		Workspace:   string(p.WorkspaceType), // Updated to WorkspaceType
 		GitManaged:  gitManaged,
 		Status:      status,
 		FullPath:    p.Path,

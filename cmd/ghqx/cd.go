@@ -11,8 +11,8 @@ import (
 
 var cdCmd = &cobra.Command{
 	Use:   "cd",
-	Short: i18n.T("cd.command.short"),
-	Long:  i18n.T("cd.command.long"),
+	Short: i18n.T("cd.command.short"), // Re-using old i18n key for `cd`
+	Long:  i18n.T("cd.command.long"),  // Re-using old i18n key for `cd`
 	RunE: runCD,
 }
 
@@ -25,9 +25,8 @@ func runCD(cmd *cobra.Command, args []string) error {
 	}
 
 	opts := status.Options{}
-	defaultRootName := application.Config.GetDefaultRoot()
-
-	projects, err := application.Status.GetAll(opts, defaultRootName)
+	// Filter projects by the default root
+	projects, err := application.Status.GetAll(opts, application.Config.GetDefaultRoot())
 	if err != nil {
 		return err
 	}

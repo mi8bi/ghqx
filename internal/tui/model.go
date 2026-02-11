@@ -282,7 +282,7 @@ func (m StatusModel) renderList() string {
 
 	repoHeader := lipgloss.NewStyle().Width(30).Align(lipgloss.Left).Render(i18n.T("status.header.name"))
 
-	zoneHeader := lipgloss.NewStyle().Width(10).Align(lipgloss.Left).Render(i18n.T("status.header.zone")) // Fixed typo NewNewStyle -> NewStyle
+	workspaceHeader := lipgloss.NewStyle().Width(10).Align(lipgloss.Left).Render(i18n.T("status.header.workspace")) // Renamed from zoneHeader and updated i18n key
 
 	gitManagedHeader := lipgloss.NewStyle().Width(10).Align(lipgloss.Left).Render(i18n.T("status.header.gitManaged"))
 
@@ -290,7 +290,7 @@ func (m StatusModel) renderList() string {
 
 
 
-	header := fmt.Sprintf("%s %s %s %s", repoHeader, zoneHeader, gitManagedHeader, statusHeader)
+	header := fmt.Sprintf("%s %s %s %s", repoHeader, workspaceHeader, gitManagedHeader, statusHeader)
 
 	s += styleHeader.Render(header) + "\n"
 
@@ -362,7 +362,7 @@ func (m StatusModel) renderDetailView() string {
 
 	s += fmt.Sprintf("  %s:     %s\n", i18n.T("status.detail.path"), row.FullPath)
 
-	s += fmt.Sprintf("  %s:   %s\n", i18n.T("status.detail.zone"), getZoneStyle(row.Zone).Render(row.Zone))
+	s += fmt.Sprintf("  %s:   %s\n", i18n.T("status.detail.workspace"), getWorkspaceStyle(row.Workspace).Render(row.Workspace)) // Updated to row.Workspace and getWorkspaceStyle
 
 	s += fmt.Sprintf("  %s:   %s\n", i18n.T("status.detail.root"), proj.Root)
 
@@ -430,7 +430,7 @@ func (m StatusModel) renderProjectRow(row ProjectRow, selected bool) string {
 
 	repoCell := lipgloss.NewStyle().Width(30).Align(lipgloss.Left).Render(row.Repo)
 
-	zoneCell := lipgloss.NewStyle().Width(10).Align(lipgloss.Left).Render(row.Zone)
+	workspaceCell := lipgloss.NewStyle().Width(10).Align(lipgloss.Left).Render(row.Workspace) // Renamed from zoneCell and updated to row.Workspace
 
 	gitManagedCell := lipgloss.NewStyle().Width(10).Align(lipgloss.Left).Render(row.GitManaged)
 
@@ -438,9 +438,7 @@ func (m StatusModel) renderProjectRow(row ProjectRow, selected bool) string {
 
 
 
-	line := fmt.Sprintf("%s %s %s %s", repoCell, zoneCell, gitManagedCell, statusCell)
-
-
+	line := fmt.Sprintf("%s %s %s %s", repoCell, workspaceCell, gitManagedCell, statusCell)
 
 	// 選択行はハイライト
 

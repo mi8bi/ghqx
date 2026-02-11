@@ -5,14 +5,14 @@ import "strings"
 // RootName represents a workspace root name (dev, release, sandbox, etc.).
 type RootName string
 
-// Zone represents the workspace zone classification.
-type Zone string
+// WorkspaceType represents the classification of a workspace (e.g., sandbox, dev, release).
+type WorkspaceType string
 
 const (
-	ZoneSandbox Zone = "sandbox"
-	ZoneDev     Zone = "dev"
-	ZoneRelease Zone = "release"
-	ZoneUnknown Zone = "unknown"
+	WorkspaceTypeSandbox  WorkspaceType = "sandbox"
+	WorkspaceTypeDev      WorkspaceType = "dev"
+	WorkspaceTypeRelease  WorkspaceType = "release"
+	WorkspaceTypeUnknown  WorkspaceType = "unknown"
 )
 
 // ProjectType represents the classification of a project.
@@ -25,13 +25,14 @@ const (
 	ProjectTypeRelease     ProjectType = "release"
 	ProjectTypeDirty       ProjectType = "dirty"
 	ProjectTypeExternal    ProjectType = "external"
+	ProjectTypeDir         ProjectType = "dir"
 )
 
 // Root represents a workspace directory.
 type Root struct {
 	Name RootName
 	Path string
-	Zone Zone
+	WorkspaceType WorkspaceType // Renamed from Zone
 }
 
 // Project represents a repository or directory in a workspace.
@@ -40,15 +41,12 @@ type Project struct {
 	DisplayName   string // Short name for display (e.g., user/repo)
 	Root          RootName
 	Path          string
-	Zone          Zone
+	WorkspaceType WorkspaceType // Renamed from Zone
 	Type          ProjectType
 	HasGit        bool
 	Dirty         bool
 	Branch        string // Lazy-loaded in TUI mode
 }
-
-
-
 
 
 // FormatDisplayName shortens a full project name for display.
@@ -61,16 +59,16 @@ func FormatDisplayName(name string) string {
 	return name
 }
 
-// DetermineZone maps a root name to a zone.
-func DetermineZone(rootName RootName) Zone {
+// DetermineWorkspaceType maps a root name to a WorkspaceType.
+func DetermineWorkspaceType(rootName RootName) WorkspaceType { // Renamed from DetermineZone
 	switch rootName {
 	case "sandbox":
-		return ZoneSandbox
+		return WorkspaceTypeSandbox
 	case "dev":
-		return ZoneDev
+		return WorkspaceTypeDev
 	case "release":
-		return ZoneRelease
+		return WorkspaceTypeRelease
 	default:
-		return ZoneUnknown
+		return WorkspaceTypeUnknown
 	}
 }

@@ -55,10 +55,10 @@ func (s *Service) GetAll(opts Options, rootFilter ...string) ([]domain.Project, 
 		go func(rootName string, rootPath string) {
 			defer wg.Done()
 
-			zone := domain.DetermineZone(domain.RootName(rootName))
-			isSandbox := zone == domain.ZoneSandbox
+			// Renamed from 'zone' to 'workspaceType' and DetermineZone to DetermineWorkspaceType
+			workspaceType := domain.DetermineWorkspaceType(domain.RootName(rootName)) 
 
-			projects, err := s.scanner.ScanRoot(domain.RootName(rootName), rootPath, isSandbox)
+			projects, err := s.scanner.ScanRoot(domain.RootName(rootName), rootPath)
 			if err != nil {
 				errMu.Lock()
 				errors = append(errors, err)
@@ -66,9 +66,9 @@ func (s *Service) GetAll(opts Options, rootFilter ...string) ([]domain.Project, 
 				return
 			}
 
-			// Set zone for all projects
+			// Set workspaceType for all projects (Renamed from Zone)
 			for i := range projects {
-				projects[i].Zone = zone
+				projects[i].WorkspaceType = workspaceType
 			}
 
 			// Enrich projects with git status if requested

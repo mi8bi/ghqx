@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	getZone string
+	getTargetWorkspace string // Renamed from getZone
 )
 
 var getCmd = &cobra.Command{
@@ -23,7 +23,8 @@ var getCmd = &cobra.Command{
 }
 
 func init() {
-	getCmd.Flags().StringVar(&getZone, "zone", "sandbox", i18n.T("get.flag.zone"))
+	// Renamed from --zone to --workspace, and getZone to getTargetWorkspace
+	getCmd.Flags().StringVar(&getTargetWorkspace, "workspace", "sandbox", i18n.T("get.flag.workspace"))
 }
 
 func runGet(cmd *cobra.Command, args []string) error {
@@ -33,11 +34,18 @@ func runGet(cmd *cobra.Command, args []string) error {
 
 	repository := args[0]
 
-	// 既に同じリポジトリが他のzoneに存在するかチェック
-	if existingZone := checkRepositoryExists(repository); existingZone != "" {
+	// Determine the target workspace (Renamed from targetZone)
+	targetWorkspace := getTargetWorkspace
+	if !cmd.Flags().Changed("workspace") { // Changed flag name
+		// If --workspace flag was not explicitly set, use the default root from config
+		targetWorkspace = application.Config.GetDefaultRoot()
+	}
+
+	// 既に同じリポジトリが他のワークスペースに存在するかチェック (Renamed from zone)
+	if existingWorkspace := checkRepositoryExists(repository); existingWorkspace != "" {
 		fmt.Print(ui.FormatWarning(fmt.Sprintf(
 			i18n.T("get.repositoryExists"),
-			existingZone,
+			existingWorkspace,
 		)))
 		fmt.Println(i18n.T("get.continueFetch"))
 	}
@@ -47,25 +55,27 @@ func runGet(cmd *cobra.Command, args []string) error {
 	
 	opts := ghq.GetOptions{
 		Repository: repository,
-		Zone:       getZone,
+		Workspace:  targetWorkspace, // Updated to Workspace
 	}
 
-	fmt.Printf(i18n.T("get.cloning")+"\n", repository, getZone)
+	// Updated message to use targetWorkspace
+	fmt.Printf(i18n.T("get.cloning")+"\n", repository, targetWorkspace)
 	
 	if err := ghqClient.Get(opts); err != nil {
 		return err
 	}
 
+	// Updated message to use targetWorkspace
 	fmt.Print(ui.FormatSuccess(fmt.Sprintf(
 		i18n.T("get.cloneSuccess"),
-		repository, getZone,
+		repository, targetWorkspace,
 	)))
 
 	return nil
 }
 
-// checkRepositoryExists は指定したリポジトリが既に存在するかチェックする
-// 存在する場合はそのzoneを返し、存在しない場合は空文字列を返す
+// checkRepositoryExists は指定したリポジリが既に存在するかチェックする (Renamed from zone)
+// 存在する場合はそのワークスペースを返し、存在しない場合は空文字列を返す (Renamed from zone)
 func checkRepositoryExists(repository string) string {
 	// global application should be loaded by PersistentPreRunE
 	projects, err := application.Status.GetAll(status.Options{})
@@ -73,21 +83,22 @@ func checkRepositoryExists(repository string) string {
 		return "" // エラーは無視して続行
 	}
 
-	// リポジトリ名を抽出（簡易的な実装）
+	// リポジリ名を抽出（簡易的な実装）
 	// 例: "github.com/user/repo" → "repo"
 	// 例: "user/repo" → "repo"
 	repoName := extractRepoName(repository)
 
 	for _, proj := range projects {
 		if contains(proj.Name, repoName) {
-			return string(proj.Zone)
+			// Updated to WorkspaceType
+			return string(proj.WorkspaceType)
 		}
 	}
 
 	return ""
 }
 
-// extractRepoName はリポジトリURLから名前を抽出する（簡易版）
+// extractRepoName はリポジリURLから名前を抽出する（簡易版）
 func extractRepoName(repository string) string {
 	// 最後の / 以降を取得
 	for i := len(repository) - 1; i >= 0; i-- {
