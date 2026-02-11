@@ -142,6 +142,16 @@ func markAncestors(rootPath, projectPath string, isSubPathOfProject map[string]b
 	}
 }
 
+// markAncestors marks all parent directories of a project as being part of a project hierarchy.
+func markAncestors(rootPath, projectPath string, isSubPathOfProject map[string]bool) {
+	currentPath := projectPath
+	for currentPath != rootPath && currentPath != filepath.Dir(rootPath) {
+		isSubPathOfProject[currentPath] = true
+		currentPath = filepath.Dir(currentPath)
+	}
+}
+
+
 // hasGitDir checks if a directory contains a .git subdirectory.
 func (s *Scanner) hasGitDir(path string) bool {
 	gitPath := filepath.Join(path, ".git")

@@ -62,6 +62,11 @@ func runStatus(cmd *cobra.Command, args []string) error {
 	return outputCompactTable(displayProjects)
 }
 
+// getDisplayWidth is a helper to get the display width of an i18n string
+func getDisplayWidth(key string) int {
+	return runewidth.StringWidth(i18n.T(key))
+}
+
 func outputCompactTable(projects []status.ProjectDisplay) error {
 	// Use i18n keys for headers
 	headerName := i18n.T("status.header.name")
