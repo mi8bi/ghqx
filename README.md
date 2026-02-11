@@ -1,13 +1,14 @@
 <p align="center">
   <a href="https://github.com/mi8bi/ghqx">
-    <img src="./assets/ogp.png" alt="OGP Image">
+    <img src="./assets/ogp.png" alt="OGP Image" style="max-width:640px;width:100%;height:auto;">
   </a>
 </p>
+
 # ghqx - ghq-compatible workspace manager
 
 ghqx extends ghq by managing multiple workspaces (dev/release/sandbox).
 
-[![Build Status](https://github.com/mi8bi/ghqx/actions/workflows/test.yml/badge.svg)](https://github.com/mi8bi/ghqx/actions/workflows/codecov.yml)
+[![Build Status](https://github.com/mi8bi/ghqx/actions/workflows/codecov.yml/badge.svg)](https://github.com/mi8bi/ghqx/actions/workflows/codecov.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/mi8bi/ghqx)](https://goreportcard.com/report/github.com/mi8bi/ghqx)
 [![codecov](https://codecov.io/gh/mi8bi/ghqx/branch/main/graph/badge.svg)](https://codecov.io/gh/mi8bi/ghqx)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -26,7 +27,7 @@ ghqx extends ghq by managing multiple workspaces (dev/release/sandbox).
 ## Installation
 
 ```bash
-go install github.com/mi8bi/ghqx@latest
+go install github.com/mi8bi/ghqx/cmd/ghqx@latest
 ```
 
 After installation, create the initial configuration:
