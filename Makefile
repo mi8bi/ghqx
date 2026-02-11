@@ -1,12 +1,26 @@
-.PHONY: build clean test install
+.PHONY: build clean test install build-release
 
-# Build the binary
+# Build variables
+VERSION ?= dev
+COMMIT ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo "none")
+BUILD_TIME ?= $(shell date -u '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null || echo "unknown")
+BUILD_FLAGS = -ldflags "-X main.version=$(VERSION) -X main.commit=$(COMMIT) -X main.buildTime=$(BUILD_TIME)"
+
+# Build the binary (development - no version info)
 build:
 	go build -o bin/ghqx ./cmd/ghqx
 
-# Install to GOPATH/bin
+# Build the binary with version information
+build-release:
+	go build $(BUILD_FLAGS) -o bin/ghqx ./cmd/ghqx
+
+# Install to GOPATH/bin (development)
 install:
 	go install ./cmd/ghqx
+
+# Install with version information
+install-release:
+	go install $(BUILD_FLAGS) ./cmd/ghqx
 
 # Run tests
 test:

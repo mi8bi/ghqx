@@ -29,6 +29,10 @@ func loadJapaneseMessages() {
 		"cd.command.long": `cd は対話的な TUI を表示してプロジェクトまたはディレクトリを選択し、そのフルパスを出力します。
 このコマンドは直接シェルのカレントディレクトリを変更することはできません。そのためには、シェル連携を使用する必要があります。`,
 
+		// version Command
+		"version.command.short": "アプリケーションバージョンを表示",
+		"version.command.long":  "version は ghqx のバージョン情報を表示します。",
+
 		// Errors (Messages and Hints)
 		"error.config.notFoundAny.message":        "設定ファイルが見つかりません",
 		"error.config.notFoundAny.hint":           "'ghqx config init' を実行して設定ファイルを作成してください",

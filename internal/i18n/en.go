@@ -29,6 +29,10 @@ It diagnoses the following items:
 		"cd.command.long": `cd displays an interactive TUI to select a project or directory and outputs its full path.
 This command cannot directly change your shell's current directory. To do that, you need to use shell integration.`,
 
+		// version Command
+		"version.command.short": "Show application version",
+		"version.command.long":  "version displays the version information of ghqx.",
+
 		// Errors (Messages and Hints)
 		"error.config.notFoundAny.message":        "No configuration file found",
 		"error.config.notFoundAny.hint":           "Run 'ghqx config init' to create a config file",

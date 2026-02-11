@@ -62,6 +62,9 @@ func init() {
 	cdCmd.Short = i18n.T("cd.command.short")
 	cdCmd.Long = i18n.T("cd.command.long")
 
+	versionCmd.Short = i18n.T("version.command.short")
+	versionCmd.Long = i18n.T("version.command.long")
+
 	statusCmd.Short = i18n.T("status.command.short")
 	statusCmd.Long = i18n.T("status.command.long")
 
@@ -89,6 +92,7 @@ func init() {
 
 	rootCmd.AddCommand(statusCmd)
 	rootCmd.AddCommand(cdCmd)
+	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(configCmd)
 	rootCmd.AddCommand(getCmd)
 	rootCmd.AddCommand(doctorCmd)
