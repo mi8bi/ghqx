@@ -35,6 +35,26 @@ After installation, create the initial configuration:
 ghqx config init
 ```
 
+## Manual Installation
+
+You can download prebuilt binaries from the [GitHub Releases page](https://github.com/mi8bi/ghqx/releases):
+
+1. Go to the [Releases](https://github.com/mi8bi/ghqx/releases) page on GitHub.
+2. Find the latest release and download the binary file for your OS and architecture (e.g., `ghqx_windows_amd64.zip` or `ghqx_linux_amd64.tar.gz`).
+3. Extract the archive. For `.tar.gz` files on Linux/macOS:
+  ```bash
+  tar -xzvf ghqx_VERSION_OS_ARCH.tar.gz
+  ```
+  For `.zip` files on Windows, you can use File Explorer's built-in "Extract All..." option.
+4. Move the extracted `ghqx` (or `ghqx.exe` on Windows) executable to a directory in your system's PATH.
+  - For Linux/macOS, a common location is `/usr/local/bin/`:
+    ```bash
+    sudo mv ghqx /usr/local/bin/
+    ```
+  - For Windows, you might choose a directory like `%USERPROFILE%\bin\` and ensure this directory is added to your PATH environment variable.
+5. Run `ghqx --help` (or `ghqx.exe --help` on Windows) to verify the installation.
+
+
 ## Commands
 
 ### `ghqx status`
