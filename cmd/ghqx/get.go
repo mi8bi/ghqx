@@ -16,10 +16,10 @@ var (
 
 var getCmd = &cobra.Command{
 	Use:   "get <repository>",
-	Short: i18n.T("get.command.short"),
-	Long: i18n.T("get.command.long"),
-	Args: cobra.ExactArgs(1),
-	RunE: runGet,
+	Short: "", // Will be set in root.go init() after locale is determined
+	Long:  "", // Will be set in root.go init() after locale is determined
+	Args:  cobra.ExactArgs(1),
+	RunE:  runGet,
 }
 
 func init() {
@@ -52,7 +52,7 @@ func runGet(cmd *cobra.Command, args []string) error {
 
 	// ghq client を使用してクローン
 	ghqClient := ghq.NewClient(application.Config)
-	
+
 	opts := ghq.GetOptions{
 		Repository: repository,
 		Workspace:  targetWorkspace, // Updated to Workspace
@@ -60,7 +60,7 @@ func runGet(cmd *cobra.Command, args []string) error {
 
 	// Updated message to use targetWorkspace
 	fmt.Printf(i18n.T("get.cloning")+"\n", repository, targetWorkspace)
-	
+
 	if err := ghqClient.Get(opts); err != nil {
 		return err
 	}
@@ -111,6 +111,6 @@ func extractRepoName(repository string) string {
 
 // contains はaにbが含まれるかチェックする
 func contains(a, b string) bool {
-	return len(a) >= len(b) && (a == b || len(a) > len(b) && 
+	return len(a) >= len(b) && (a == b || len(a) > len(b) &&
 		(a[len(a)-len(b)-1] == '/' && a[len(a)-len(b):] == b))
 }

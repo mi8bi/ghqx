@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 
-	"github.com/mi8bi/ghqx/internal/i18n"
 	"github.com/mi8bi/ghqx/internal/selector"
 	"github.com/mi8bi/ghqx/internal/status"
 	"github.com/spf13/cobra"
@@ -11,8 +10,8 @@ import (
 
 var cdCmd = &cobra.Command{
 	Use:   "cd",
-	Short: i18n.T("cd.command.short"),
-	Long:  i18n.T("cd.command.long"),
+	Short: "", // Will be set in root.go init() after locale is determined
+	Long:  "", // Will be set in root.go init() after locale is determined
 	RunE:  runCD,
 }
 

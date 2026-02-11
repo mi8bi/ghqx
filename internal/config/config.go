@@ -9,14 +9,13 @@ import (
 
 // Config represents the ghqx configuration.
 type Config struct {
-	Roots    map[string]string `toml:"roots"`
-	Default  DefaultConfig     `toml:"default"`
+	Roots   map[string]string `toml:"roots"`
+	Default DefaultConfig     `toml:"default"`
 }
 
 // DefaultConfig represents default settings.
 type DefaultConfig struct {
-	Root    string `toml:"root"`
-	Language string `toml:"language"`
+	Root string `toml:"root"`
 }
 
 // Validate checks if the configuration is valid.
@@ -58,7 +57,7 @@ func NewDefaultConfig() *Config {
 	// Determine OS-specific default paths using $HOME/ghqx
 	homeDir, _ := os.UserHomeDir()
 	var basePath string
-	
+
 	if homeDir != "" {
 		basePath = filepath.Join(homeDir, "ghqx")
 	} else {
@@ -74,7 +73,6 @@ func NewDefaultConfig() *Config {
 		},
 		Default: DefaultConfig{
 			Root: "sandbox",
-			Language: "ja",
 		},
 	}
 }

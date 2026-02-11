@@ -15,15 +15,15 @@ import (
 
 var cleanCmd = &cobra.Command{
 	Use:   "clean",
-	Short: i18n.T("clean.command.short"),
-	Long:  i18n.T("clean.command.long"),
+	Short: "", // Will be set in root.go init() after locale is determined
+	Long:  "", // Will be set in root.go init() after locale is determined
 	RunE:  runClean,
 }
 
 func runClean(cmd *cobra.Command, args []string) error {
 	fmt.Println(ui.FormatWarning(i18n.T("clean.warning.title")))
 	fmt.Println(i18n.T("clean.warning.description"))
-	
+
 	// Load the app to get config, but handle errors gracefully
 	// as the config file might not even exist.
 	loadedApp, err := app.NewFromConfigPath(configPath)
@@ -66,7 +66,7 @@ func runClean(cmd *cobra.Command, args []string) error {
 
 	// 2. Delete config file
 	fmt.Println(i18n.T("clean.deleting.config"))
-	
+
 	// Try to find the config path again to be sure.
 	// loader := config.NewLoader() // This line is removed.
 	// We'll rely on the global `configPath` flag or the default path.
@@ -93,7 +93,6 @@ func runClean(cmd *cobra.Command, args []string) error {
 	} else {
 		fmt.Println(i18n.T("clean.deleting.noConfigPath"))
 	}
-
 
 	fmt.Println(ui.FormatSuccess(i18n.T("clean.complete")))
 	return nil

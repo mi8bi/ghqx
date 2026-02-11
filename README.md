@@ -162,13 +162,11 @@ release = "C:/Users/YourUser/ghqx/release"
 
 [default]
 root = "sandbox"
-language = "ja"
 ```
 
 - **`[roots]`**: Defines the paths for your different workspaces (zones).
 - **`[default]`**:
   - `root`: The default root to use for certain operations.
-  - `language`: The display language (`en` or `ja`).
 
 ## Architecture
 

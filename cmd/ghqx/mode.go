@@ -4,18 +4,18 @@ import (
 	"fmt"
 	"sort"
 
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/mi8bi/ghqx/internal/config"
 	"github.com/mi8bi/ghqx/internal/i18n"
 	"github.com/spf13/cobra"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 )
 
 var modeCmd = &cobra.Command{
 	Use:   "mode",
-	Short: i18n.T("mode.command.short"),
-	Long:  i18n.T("mode.command.long"),
-	RunE: runMode,
+	Short: "", // Will be set in root.go init() after locale is determined
+	Long:  "", // Will be set in root.go init() after locale is determined
+	RunE:  runMode,
 }
 
 func init() {
@@ -24,9 +24,9 @@ func init() {
 // ModeSelectorModel is the Bubble Tea model for the mode selector.
 type ModeSelectorModel struct {
 	workspaceNames []string // Renamed from choices
-	cursor  int      // which choice is selected
-	selected string   // the selected choice
-	quitting bool
+	cursor         int      // which choice is selected
+	selected       string   // the selected choice
+	quitting       bool
 }
 
 // Init implements tea.Model.
@@ -98,13 +98,13 @@ func runMode(cmd *cobra.Command, args []string) error {
 	sort.Strings(rootNames) // Sort for consistent display
 
 	if len(rootNames) == 0 {
-		return fmt.Errorf(i18n.T("mode.error.noRoots"))
+		return fmt.Errorf("%s", i18n.T("mode.error.noRoots"))
 	}
 
 	// Initialize the TUI model
 	model := ModeSelectorModel{
 		workspaceNames: rootNames, // Updated to workspaceNames
-		cursor:  0,
+		cursor:         0,
 	}
 
 	// If a default root is already set, try to pre-select it
@@ -133,7 +133,7 @@ func runMode(cmd *cobra.Command, args []string) error {
 		// Update config
 		application.Config.Default.Root = m.selected
 		loader := config.NewLoader()
-		
+
 		// Determine config path for saving
 		savePath := configPath
 		if savePath == "" {

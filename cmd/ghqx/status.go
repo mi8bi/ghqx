@@ -18,8 +18,8 @@ var (
 
 var statusCmd = &cobra.Command{
 	Use:   "status",
-	Short: i18n.T("status.command.short"),
-	Long:  i18n.T("status.command.long"),
+	Short: "", // Will be set in root.go init() after locale is determined
+	Long:  "", // Will be set in root.go init() after locale is determined
 	RunE:  runStatus,
 }
 

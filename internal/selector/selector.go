@@ -88,7 +88,7 @@ func (m Model) handleInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 	// Handle navigation keys
 	switch keyStr {
-	case "up", "k":
+	case "up":
 		if m.cursor > 0 {
 			m.cursor--
 		} else if len(m.filteredProjects) > 0 {
@@ -96,7 +96,7 @@ func (m Model) handleInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		}
 		return m, nil
 
-	case "down", "j":
+	case "down":
 		if m.cursor < len(m.filteredProjects)-1 {
 			m.cursor++
 		} else if len(m.filteredProjects) > 0 {

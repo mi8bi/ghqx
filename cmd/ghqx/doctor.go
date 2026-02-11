@@ -11,9 +11,9 @@ import (
 
 var doctorCmd = &cobra.Command{
 	Use:   "doctor",
-	Short: i18n.T("doctor.command.short"),
-	Long:  i18n.T("doctor.command.long"),
-	RunE: runDoctor,
+	Short: "", // Will be set in root.go init() after locale is determined
+	Long:  "", // Will be set in root.go init() after locale is determined
+	RunE:  runDoctor,
 }
 
 func runDoctor(cmd *cobra.Command, args []string) error {
