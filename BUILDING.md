@@ -100,6 +100,79 @@ After building, verify the version output:
 # go version: go1.25.6
 ```
 
+## Building with GoReleaser
+
+GoReleaser is used for automated multi-platform releases in CI/CD pipelines.
+
+### Prerequisites
+
+```bash
+# Install GoReleaser (optional, usually run in CI)
+brew install goreleaser  # macOS
+# or download from https://goreleaser.com/install/
+```
+
+### Local Release Build
+
+```bash
+# Build for all platforms (requires git tag)
+goreleaser release --snapshot --rm-dist
+
+# Build without creating a GitHub release (dry-run)
+goreleaser release --clean --skip=announce
+```
+
+### Release Process (via GitHub Actions)
+
+When you push a version tag, GitHub Actions automatically:
+
+1. Checks out the code
+2. Builds for multiple platforms:
+   - Linux (amd64, arm64)
+   - macOS (amd64, arm64)
+   - Windows (amd64)
+3. Creates checksums
+4. Publishes to GitHub Releases
+
+**To trigger a release:**
+```bash
+git tag v0.3.0
+git push origin v0.3.0
+```
+
+### GoReleaser Configuration
+
+The main configuration file is [.goreleaser.yaml](.goreleaser.yaml), which defines:
+
+- **Builds**: Multi-platform configurations
+- **Archives**: Packaging format (tar.gz for Unix, zip for Windows)
+- **Checksums**: SHA256 verification files
+- **Release**: GitHub release publishing
+- **ldflags**: Automatic version embedding
+
+The old `.goreleaser.linux.yaml`, `.goreleaser.macos.yaml`, and `.goreleaser.windows.yaml` files are no longer needed and can be kept for reference or removed.
+
+### Embedded Version Information
+
+When building with GoReleaser:
+- `main.version` is set to the Git tag (e.g., `v0.3.0`)
+- `main.commit` is set to the commit hash
+- `main.buildTime` is set to the commit timestamp
+
+This happens automatically without manual ldflags configuration.
+
+### Verifying Release Artifacts
+
+```bash
+# Check checksums
+sha256sum -c ghqx_v0.3.0_checksums.txt
+
+# Test the binary
+./ghqx_v0.3.0_linux_amd64/ghqx version
+```
+
+---
+
 ## Build Variables
 
 The binary embeds the following variables during build:

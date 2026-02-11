@@ -179,7 +179,8 @@ ghqx/
 │   ├── config.go
 │   ├── get.go
 │   ├── clean.go
-│   └── mode.go
+│   ├── mode.go
+│   └── version.go
 ├── internal/
 │   ├── app/           # Application orchestration
 │   ├── config/        # Config loading & validation
@@ -194,8 +195,46 @@ ghqx/
 │   └── ui/            # CLI output formatting
 ├── go.mod
 ├── Makefile
+├── .goreleaser.yaml       # Multi-platform release config
+├── .github/workflows/     # CI/CD workflows
+│   ├── test.yml           # Automated tests
+│   └── release.yml        # Automated releases
+├── BUILDING.md            # Build instructions
+├── CI_CD.md              # CI/CD pipeline documentation
 └── README.md
 ```
+
+## Building
+
+### Quick Build
+
+```bash
+# Development build
+make build
+
+# Release build with version information
+make build-release VERSION=v0.3.0
+```
+
+For detailed build instructions, see [BUILDING.md](BUILDING.md).
+
+### Release Process
+
+ghqx uses **GoReleaser** for automated multi-platform releases to GitHub.
+
+To create a release:
+
+```bash
+git tag v0.3.0
+git push origin v0.3.0
+```
+
+This triggers the GitHub Actions [release workflow](.github/workflows/release.yml), which:
+- Builds for Linux (amd64, arm64), macOS (amd64, arm64), and Windows (amd64)
+- Creates checksums
+- Publishes to GitHub Releases
+
+See [CI_CD.md](CI_CD.md) for detailed CI/CD documentation.
 
 ## License
 

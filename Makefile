@@ -1,4 +1,4 @@
-.PHONY: build clean test install build-release
+.PHONY: build clean test install build-release install-release release-snapshot lint fmt deps
 
 # Build variables
 VERSION ?= dev
@@ -21,6 +21,14 @@ install:
 # Install with version information
 install-release:
 	go install $(BUILD_FLAGS) ./cmd/ghqx
+
+# Release build with GoReleaser (snapshot/local)
+release-snapshot:
+	goreleaser release --snapshot --rm-dist
+
+# Release build with GoReleaser (requires git tag)
+release:
+	goreleaser release --clean
 
 # Run tests
 test:

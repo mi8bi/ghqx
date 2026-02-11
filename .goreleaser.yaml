@@ -1,0 +1,76 @@
+project_name: ghqx
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  # Linux build
+  - id: linux
+    main: ./cmd/ghqx
+    goos: [linux]
+    goarch: [amd64, arm64]
+    ldflags:
+      - -X main.version={{.Version}}
+      - -X main.commit={{.Commit}}
+      - -X main.buildTime={{.CommitDate}}
+
+  # macOS build (Intel + Apple Silicon)
+  - id: darwin
+    main: ./cmd/ghqx
+    goos: [darwin]
+    goarch: [amd64, arm64]
+    ldflags:
+      - -X main.version={{.Version}}
+      - -X main.commit={{.Commit}}
+      - -X main.buildTime={{.CommitDate}}
+
+  # Windows build
+  - id: windows
+    main: ./cmd/ghqx
+    goos: [windows]
+    goarch: [amd64]
+    ldflags:
+      - -X main.version={{.Version}}
+      - -X main.commit={{.Commit}}
+      - -X main.buildTime={{.CommitDate}}
+
+archives:
+  # Linux archives (tar.gz)
+  - id: linux-archives
+    builds: [linux]
+    format: tar.gz
+    name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
+
+  # macOS archives (tar.gz)
+  - id: darwin-archives
+    builds: [darwin]
+    format: tar.gz
+    name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
+
+  # Windows archives (zip)
+  - id: windows-archives
+    builds: [windows]
+    format: zip
+    name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
+
+checksum:
+  name_template: "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
+  algorithm: sha256
+
+release:
+  draft: false
+  prerelease: false
+  name_template: "{{ .Tag }}"
+
+changelog:
+  sort: asc
+  abbrev: 7
+  filters:
+    exclude:
+      - "^test:"
+      - "^chore"
+      - "^docs"
+      - "^ci:"
+      - Merge pull request
+      - Merge branch
