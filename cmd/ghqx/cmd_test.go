@@ -1,7 +1,6 @@
 package main
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -59,7 +58,7 @@ func TestOutputTablesAndCheckRepositoryExists(t *testing.T) {
 	}
 
 	// Prepare a real app with a temp root so checkRepositoryExists can scan
-	tmp, err := ioutil.TempDir("", "ghqx-cmd-check")
+	tmp, err := os.MkdirTemp("", "ghqx-cmd-check")
 	if err != nil {
 		t.Fatalf("tempdir: %v", err)
 	}

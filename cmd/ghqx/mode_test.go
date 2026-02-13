@@ -1,7 +1,6 @@
 package main
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -28,7 +27,7 @@ func TestRunModeWithLoadAppError(t *testing.T) {
 }
 
 func TestRunModeWithNoRoots(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "ghqx-mode-noroots")
+	tmp, err := os.MkdirTemp("", "ghqx-mode-noroots")
 	if err != nil {
 		t.Fatalf("tempdir: %v", err)
 	}
@@ -41,7 +40,7 @@ func TestRunModeWithNoRoots(t *testing.T) {
 	}
 
 	// This should fail validation, but let's create it directly
-	if err := ioutil.WriteFile(cfgPath, []byte("[roots]\n[default]\nroot = \"\"\n"), 0644); err != nil {
+	if err := os.WriteFile(cfgPath, []byte("[roots]\n[default]\nroot = \"\"\n"), 0644); err != nil {
 		t.Fatalf("failed to write config: %v", err)
 	}
 
@@ -206,7 +205,7 @@ func TestModeSelectorModelBoundaries(t *testing.T) {
 }
 
 func TestRunModeWithSingleRoot(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "ghqx-mode-single")
+	tmp, err := os.MkdirTemp("", "ghqx-mode-single")
 	if err != nil {
 		t.Fatalf("tempdir: %v", err)
 	}

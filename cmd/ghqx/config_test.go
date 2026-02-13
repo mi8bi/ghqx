@@ -12,7 +12,7 @@ import (
 )
 
 func TestRunConfigInitWithYesFlag(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "ghqx-config-init-yes")
+	tmp, err := os.MkdirTemp("", "ghqx-config-init-yes")
 	if err != nil {
 		t.Fatalf("tempdir: %v", err)
 	}
@@ -51,7 +51,7 @@ func TestRunConfigInitWithYesFlag(t *testing.T) {
 }
 
 func TestRunConfigInitFileExists(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "ghqx-config-exists")
+	tmp, err := os.MkdirTemp("", "ghqx-config-exists")
 	if err != nil {
 		t.Fatalf("tempdir: %v", err)
 	}
@@ -60,7 +60,7 @@ func TestRunConfigInitFileExists(t *testing.T) {
 	cfgPath := filepath.Join(tmp, "config.toml")
 
 	// Create existing config file
-	if err := ioutil.WriteFile(cfgPath, []byte("[roots]\ndev = \"/tmp/dev\"\n"), 0644); err != nil {
+	if err := os.WriteFile(cfgPath, []byte("[roots]\ndev = \"/tmp/dev\"\n"), 0644); err != nil {
 		t.Fatalf("failed to create existing config: %v", err)
 	}
 
@@ -75,7 +75,7 @@ func TestRunConfigInitFileExists(t *testing.T) {
 }
 
 func TestRunConfigShow(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "ghqx-config-show")
+	tmp, err := os.MkdirTemp("", "ghqx-config-show")
 	if err != nil {
 		t.Fatalf("tempdir: %v", err)
 	}

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -154,7 +153,7 @@ func TestInitLocale(t *testing.T) {
 }
 
 func TestLoadAppSuccess(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "ghqx-loadapp")
+	tmp, err := os.MkdirTemp("", "ghqx-loadapp")
 	if err != nil {
 		t.Fatalf("tempdir: %v", err)
 	}
@@ -239,7 +238,7 @@ func TestPersistentPreRunEForConfigInit(t *testing.T) {
 }
 
 func TestPersistentPreRunEForOtherCommands(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "ghqx-prerun")
+	tmp, err := os.MkdirTemp("", "ghqx-prerun")
 	if err != nil {
 		t.Fatalf("tempdir: %v", err)
 	}
@@ -284,7 +283,7 @@ func TestMainFunctionExists(t *testing.T) {
 }
 
 func TestNewFromConfigPathWrapper(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "ghqx-newfromconfig")
+	tmp, err := os.MkdirTemp("", "ghqx-newfromconfig")
 	if err != nil {
 		t.Fatalf("tempdir: %v", err)
 	}

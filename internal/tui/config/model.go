@@ -153,14 +153,15 @@ func (m Model) handleEditKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 	case "enter":
 		// 確定
-		if field.Type == FieldTypeBool {
+		switch field.Type {
+		case FieldTypeBool:
 			// bool 型は toggle
 			if m.editValue == "true" {
 				m.editValue = "false"
 			} else {
 				m.editValue = "true"
 			}
-		} else if field.Type == FieldTypeSelection {
+		case FieldTypeSelection:
 			// Selection 型は Enter で確定し、編集モードを終了
 			m.editor.UpdateField(m.cursor, m.editValue)
 			m.state = EditStateList
@@ -294,11 +295,12 @@ func (m Model) renderHelp() string {
 	switch m.state {
 	case EditStateEdit:
 		field := m.editor.Fields[m.cursor]
-		if field.Type == FieldTypeBool {
+		switch field.Type {
+		case FieldTypeBool:
 			help = "Enter/Space: 切替 | Esc/q: キャンセル"
-		} else if field.Type == FieldTypeSelection {
+		case FieldTypeSelection:
 			help = "←→: 移動 | Enter: 確定 | Esc/q: キャンセル" // Updated help for selection
-		} else {
+		default:
 			help = "Enter: 確定 | Esc/q: キャンセル | Backspace: 削除"
 		}
 	default:

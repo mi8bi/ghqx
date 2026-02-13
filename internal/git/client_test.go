@@ -1,7 +1,6 @@
 package git
 
 import (
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -21,7 +20,7 @@ func TestHasGitUnavailableWhenPathEmpty(t *testing.T) {
 }
 
 func TestIsDirtyAndGetBranchNonRepo(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "ghqx-git-nonrepo")
+	tmp, err := os.MkdirTemp("", "ghqx-git-nonrepo")
 	if err != nil {
 		t.Fatalf("tempdir: %v", err)
 	}
@@ -52,7 +51,7 @@ func TestInitCommitFlowWhenGitAvailable(t *testing.T) {
 		t.Skip("git not available on this system")
 	}
 
-	tmp, err := ioutil.TempDir("", "ghqx-git-repo")
+	tmp, err := os.MkdirTemp("", "ghqx-git-repo")
 	if err != nil {
 		t.Fatalf("tempdir: %v", err)
 	}
@@ -79,7 +78,7 @@ func TestInitCommitFlowWhenGitAvailable(t *testing.T) {
 
 	// create a file and commit using git CLI
 	f := filepath.Join(tmp, "file.txt")
-	if err := ioutil.WriteFile(f, []byte("x"), 0644); err != nil {
+	if err := os.WriteFile(f, []byte("x"), 0644); err != nil {
 		t.Fatalf("write file: %v", err)
 	}
 	cmd = exec.Command("git", "add", ".")

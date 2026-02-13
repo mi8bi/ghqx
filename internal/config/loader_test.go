@@ -1,14 +1,13 @@
 package config
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
 )
 
 func TestGetDefaultConfigPathWithXDG(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "ghqx-xdg")
+	tmp, err := os.MkdirTemp("", "ghqx-xdg")
 	if err != nil {
 		t.Fatalf("tempdir: %v", err)
 	}
@@ -28,7 +27,7 @@ func TestGetDefaultConfigPathWithXDG(t *testing.T) {
 }
 
 func TestLoaderSaveAndLoad(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "ghqx-loader")
+	tmp, err := os.MkdirTemp("", "ghqx-loader")
 	if err != nil {
 		t.Fatalf("tempdir: %v", err)
 	}
@@ -53,7 +52,7 @@ func TestLoaderSaveAndLoad(t *testing.T) {
 }
 
 func TestFindConfigPathEnvVar(t *testing.T) {
-	tmpFile, err := ioutil.TempFile("", "ghqx-config-*.toml")
+	tmpFile, err := os.CreateTemp("", "ghqx-config-*.toml")
 	if err != nil {
 		t.Fatalf("tempfile: %v", err)
 	}

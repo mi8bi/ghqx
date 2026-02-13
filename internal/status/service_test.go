@@ -1,7 +1,6 @@
 package status
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -11,7 +10,7 @@ import (
 )
 
 func TestGetAllAndFindProject(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "ghqx-status-test")
+	tmp, err := os.MkdirTemp("", "ghqx-status-test")
 	if err != nil {
 		t.Fatalf("tempdir: %v", err)
 	}
@@ -70,7 +69,7 @@ func TestDetermineTargetRoots(t *testing.T) {
 
 func TestGetAllScansTempRoot(t *testing.T) {
 	// create temp root with structure github.com/user/repo
-	root, err := ioutil.TempDir("", "ghqx-test-root")
+	root, err := os.MkdirTemp("", "ghqx-test-root")
 	if err != nil {
 		t.Fatalf("tempdir: %v", err)
 	}

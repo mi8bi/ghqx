@@ -1,7 +1,8 @@
 package main
 
 import (
-	"io/ioutil"
+	"io"
+
 	"os"
 	"path/filepath"
 	"strings"
@@ -28,7 +29,7 @@ func TestRunStatusWithLoadAppError(t *testing.T) {
 }
 
 func TestRunStatusCompactMode(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "ghqx-status-compact")
+	tmp, err := os.MkdirTemp("", "ghqx-status-compact")
 	if err != nil {
 		t.Fatalf("tempdir: %v", err)
 	}
@@ -78,7 +79,7 @@ func TestRunStatusCompactMode(t *testing.T) {
 }
 
 func TestRunStatusVerboseMode(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "ghqx-status-verbose")
+	tmp, err := os.MkdirTemp("", "ghqx-status-verbose")
 	if err != nil {
 		t.Fatalf("tempdir: %v", err)
 	}
@@ -180,7 +181,7 @@ func TestOutputCompactTableMultipleProjects(t *testing.T) {
 
 	w.Close()
 	os.Stdout = oldStdout
-	output, _ := ioutil.ReadAll(r)
+	output, _ := io.ReadAll(r)
 	outputStr := string(output)
 
 	// Verify all repos are in output
@@ -221,7 +222,7 @@ func TestOutputVerboseTableMultipleProjects(t *testing.T) {
 
 	w.Close()
 	os.Stdout = oldStdout
-	output, _ := ioutil.ReadAll(r)
+	output, _ := io.ReadAll(r)
 	outputStr := string(output)
 
 	// Verify paths are in output
@@ -275,7 +276,7 @@ func TestTruncateStringFunction(t *testing.T) {
 }
 
 func TestRunStatusTUIMode(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "ghqx-status-tui")
+	tmp, err := os.MkdirTemp("", "ghqx-status-tui")
 	if err != nil {
 		t.Fatalf("tempdir: %v", err)
 	}
@@ -328,7 +329,7 @@ func TestOutputCompactTableWithLongNames(t *testing.T) {
 
 	w.Close()
 	os.Stdout = oldStdout
-	_, _ = ioutil.ReadAll(r)
+	_, _ = io.ReadAll(r)
 }
 
 func TestOutputVerboseTableWithLongPaths(t *testing.T) {
@@ -354,5 +355,5 @@ func TestOutputVerboseTableWithLongPaths(t *testing.T) {
 
 	w.Close()
 	os.Stdout = oldStdout
-	_, _ = ioutil.ReadAll(r)
+	_, _ = io.ReadAll(r)
 }

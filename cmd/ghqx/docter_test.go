@@ -1,7 +1,8 @@
 package main
 
 import (
-	"io/ioutil"
+	"io"
+
 	"os"
 	"path/filepath"
 	"strings"
@@ -33,7 +34,7 @@ func TestRunDoctorWithInvalidConfig(t *testing.T) {
 
 func TestDoctorServiceChecks(t *testing.T) {
 	// This test focuses on the doctor service itself, not the command execution
-	tmp, err := ioutil.TempDir("", "ghqx-doctor-service")
+	tmp, err := os.MkdirTemp("", "ghqx-doctor-service")
 	if err != nil {
 		t.Fatalf("tempdir: %v", err)
 	}
@@ -82,7 +83,7 @@ func TestDoctorServiceChecks(t *testing.T) {
 
 func TestDoctorOutputFormat(t *testing.T) {
 	// Test the output format without actually running the command
-	tmp, err := ioutil.TempDir("", "ghqx-doctor-output")
+	tmp, err := os.MkdirTemp("", "ghqx-doctor-output")
 	if err != nil {
 		t.Fatalf("tempdir: %v", err)
 	}
@@ -121,7 +122,7 @@ func TestDoctorOutputFormat(t *testing.T) {
 
 	w.Close()
 	os.Stdout = oldStdout
-	output, _ := ioutil.ReadAll(r)
+	output, _ := io.ReadAll(r)
 	outputStr := string(output)
 
 	// Verify output format
@@ -139,7 +140,7 @@ func TestRunDoctorWithEmptyPath(t *testing.T) {
 	os.Setenv("PATH", "")
 
 	// Create a valid config to pass config check
-	tmp, err := ioutil.TempDir("", "ghqx-doctor-nopath")
+	tmp, err := os.MkdirTemp("", "ghqx-doctor-nopath")
 	if err != nil {
 		t.Fatalf("tempdir: %v", err)
 	}

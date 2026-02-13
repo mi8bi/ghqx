@@ -1,7 +1,6 @@
 package config
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -10,7 +9,7 @@ import (
 )
 
 func TestEnsureRootDirectoriesFileConflict(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "ghqx-path-test")
+	tmp, err := os.MkdirTemp("", "ghqx-path-test")
 	if err != nil {
 		t.Fatalf("tempdir: %v", err)
 	}
@@ -18,7 +17,7 @@ func TestEnsureRootDirectoriesFileConflict(t *testing.T) {
 
 	// Create a file where a directory is expected
 	file := filepath.Join(tmp, "conflict")
-	if err := ioutil.WriteFile(file, []byte("x"), 0644); err != nil {
+	if err := os.WriteFile(file, []byte("x"), 0644); err != nil {
 		t.Fatalf("write file: %v", err)
 	}
 

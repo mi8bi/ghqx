@@ -1,7 +1,8 @@
 package main
 
 import (
-	"io/ioutil"
+	"io"
+
 	"os"
 	"runtime"
 	"strings"
@@ -37,7 +38,7 @@ func TestRunVersionDefault(t *testing.T) {
 
 	w.Close()
 	os.Stdout = oldStdout
-	output, _ := ioutil.ReadAll(r)
+	output, _ := io.ReadAll(r)
 	outputStr := string(output)
 
 	// Verify output contains version
@@ -83,7 +84,7 @@ func TestRunVersionVerbose(t *testing.T) {
 
 	w.Close()
 	os.Stdout = oldStdout
-	output, _ := ioutil.ReadAll(r)
+	output, _ := io.ReadAll(r)
 	outputStr := string(output)
 
 	// Verify output contains all info
@@ -142,7 +143,7 @@ func TestVersionDefaultValues(t *testing.T) {
 
 	w.Close()
 	os.Stdout = oldStdout
-	output, _ := ioutil.ReadAll(r)
+	output, _ := io.ReadAll(r)
 	outputStr := string(output)
 
 	// Verify defaults appear in output
@@ -205,7 +206,7 @@ func TestVersionWithDifferentFormats(t *testing.T) {
 
 		w.Close()
 		os.Stdout = oldStdout
-		output, _ := ioutil.ReadAll(r)
+		output, _ := io.ReadAll(r)
 		outputStr := string(output)
 
 		// Verify version always appears
@@ -249,7 +250,7 @@ func TestVersionOutputFormat(t *testing.T) {
 
 	w.Close()
 	os.Stdout = oldStdout
-	output, _ := ioutil.ReadAll(r)
+	output, _ := io.ReadAll(r)
 	outputStr := string(output)
 
 	// Should be single line format
@@ -292,7 +293,7 @@ func TestVersionVerboseOutputFormat(t *testing.T) {
 
 	w.Close()
 	os.Stdout = oldStdout
-	output, _ := ioutil.ReadAll(r)
+	output, _ := io.ReadAll(r)
 	outputStr := string(output)
 
 	// Should be multi-line format with at least 4 lines

@@ -1,7 +1,6 @@
 package config
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -10,7 +9,7 @@ import (
 )
 
 func TestFindConfigPathExplicitAndEnv(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "ghqx-loader-find")
+	tmp, err := os.MkdirTemp("", "ghqx-loader-find")
 	if err != nil {
 		t.Fatalf("tempdir: %v", err)
 	}
@@ -18,7 +17,7 @@ func TestFindConfigPathExplicitAndEnv(t *testing.T) {
 
 	// explicit path existing
 	f := filepath.Join(tmp, "cfg.toml")
-	if err := ioutil.WriteFile(f, []byte("[roots]\n"), 0644); err != nil {
+	if err := os.WriteFile(f, []byte("[roots]\n"), 0644); err != nil {
 		t.Fatalf("write file: %v", err)
 	}
 
@@ -43,7 +42,7 @@ func TestFindConfigPathExplicitAndEnv(t *testing.T) {
 	}
 
 	// GHQX_CONFIG env
-	tmpf, err := ioutil.TempFile("", "ghqx-env-*.toml")
+	tmpf, err := os.CreateTemp("", "ghqx-env-*.toml")
 	if err != nil {
 		t.Fatalf("tempfile: %v", err)
 	}
@@ -63,7 +62,7 @@ func TestFindConfigPathExplicitAndEnv(t *testing.T) {
 }
 
 func TestLoadFromPathInvalidTOML(t *testing.T) {
-	tmpf, err := ioutil.TempFile("", "ghqx-bad-*.toml")
+	tmpf, err := os.CreateTemp("", "ghqx-bad-*.toml")
 	if err != nil {
 		t.Fatalf("tempfile: %v", err)
 	}
@@ -90,7 +89,7 @@ func TestSaveValidateError(t *testing.T) {
 	l := NewLoader()
 	// invalid cfg (no roots)
 	cfg := &Config{Roots: map[string]string{}}
-	tmp, err := ioutil.TempDir("", "ghqx-save")
+	tmp, err := os.MkdirTemp("", "ghqx-save")
 	if err != nil {
 		t.Fatalf("tempdir: %v", err)
 	}

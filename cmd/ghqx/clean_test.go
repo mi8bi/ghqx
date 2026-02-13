@@ -1,7 +1,6 @@
 package main
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -11,7 +10,7 @@ import (
 )
 
 func TestRunCleanWithValidConfig(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "ghqx-clean-test")
+	tmp, err := os.MkdirTemp("", "ghqx-clean-test")
 	if err != nil {
 		t.Fatalf("tempdir: %v", err)
 	}
@@ -60,7 +59,7 @@ func TestRunCleanWithValidConfig(t *testing.T) {
 }
 
 func TestRunCleanWithYesInput(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "ghqx-clean-yes")
+	tmp, err := os.MkdirTemp("", "ghqx-clean-yes")
 	if err != nil {
 		t.Fatalf("tempdir: %v", err)
 	}
@@ -84,7 +83,7 @@ func TestRunCleanWithYesInput(t *testing.T) {
 		t.Fatalf("failed to create sandbox dir: %v", err)
 	}
 	testFile := filepath.Join(sandboxPath, "test.txt")
-	if err := ioutil.WriteFile(testFile, []byte("test"), 0644); err != nil {
+	if err := os.WriteFile(testFile, []byte("test"), 0644); err != nil {
 		t.Fatalf("failed to create test file: %v", err)
 	}
 
@@ -140,7 +139,7 @@ func TestRunCleanWithoutConfig(t *testing.T) {
 }
 
 func TestRunCleanCaseInsensitive(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "ghqx-clean-case")
+	tmp, err := os.MkdirTemp("", "ghqx-clean-case")
 	if err != nil {
 		t.Fatalf("tempdir: %v", err)
 	}

@@ -1,7 +1,6 @@
 package fs
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -17,7 +16,7 @@ func TestIsSafeNameAndContains(t *testing.T) {
 }
 
 func TestHasGitDirAndEnsureDir(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "ghqx-fs-test")
+	tmp, err := os.MkdirTemp("", "ghqx-fs-test")
 	if err != nil {
 		t.Fatalf("tempdir: %v", err)
 	}
@@ -43,7 +42,7 @@ func TestHasGitDirAndEnsureDir(t *testing.T) {
 }
 
 func TestScanRootReturnsProjects(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "ghqx-scan-root")
+	tmp, err := os.MkdirTemp("", "ghqx-scan-root")
 	if err != nil {
 		t.Fatalf("tempdir: %v", err)
 	}

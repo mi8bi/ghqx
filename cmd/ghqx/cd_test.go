@@ -1,7 +1,6 @@
 package main
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -27,7 +26,7 @@ func TestRunCDWithLoadAppError(t *testing.T) {
 }
 
 func TestRunCDSuccess(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "ghqx-cd-success")
+	tmp, err := os.MkdirTemp("", "ghqx-cd-success")
 	if err != nil {
 		t.Fatalf("tempdir: %v", err)
 	}
@@ -66,7 +65,7 @@ func TestLoadProjectsForSelectionWithoutApp(t *testing.T) {
 }
 
 func TestLoadProjectsForSelectionEmptyRoot(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "ghqx-cd-empty")
+	tmp, err := os.MkdirTemp("", "ghqx-cd-empty")
 	if err != nil {
 		t.Fatalf("tempdir: %v", err)
 	}

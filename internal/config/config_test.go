@@ -1,7 +1,6 @@
 package config
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -47,7 +46,7 @@ func TestNewDefaultConfigCreatesRoots(t *testing.T) {
 	}
 
 	// Test EnsureRootDirectories creates directories
-	tmpDir, err := ioutil.TempDir("", "ghqx-config-test")
+	tmpDir, err := os.MkdirTemp("", "ghqx-config-test")
 	if err != nil {
 		t.Fatalf("tempdir: %v", err)
 	}
@@ -64,14 +63,14 @@ func TestNewDefaultConfigCreatesRoots(t *testing.T) {
 
 func TestEnsureDirectoryErrors(t *testing.T) {
 	// create a file where a directory is expected
-	tmpDir, err := ioutil.TempDir("", "ghqx-ensure-test")
+	tmpDir, err := os.MkdirTemp("", "ghqx-ensure-test")
 	if err != nil {
 		t.Fatalf("tempdir: %v", err)
 	}
 	defer os.RemoveAll(tmpDir)
 
 	filePath := filepath.Join(tmpDir, "file")
-	if err := ioutil.WriteFile(filePath, []byte("x"), 0644); err != nil {
+	if err := os.WriteFile(filePath, []byte("x"), 0644); err != nil {
 		t.Fatalf("writefile: %v", err)
 	}
 

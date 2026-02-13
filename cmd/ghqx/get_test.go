@@ -1,7 +1,6 @@
 package main
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -26,7 +25,7 @@ func TestRunGetWithLoadAppError(t *testing.T) {
 }
 
 func TestRunGetWithExistingRepository(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "ghqx-get-existing")
+	tmp, err := os.MkdirTemp("", "ghqx-get-existing")
 	if err != nil {
 		t.Fatalf("tempdir: %v", err)
 	}
@@ -56,7 +55,7 @@ func TestRunGetWithExistingRepository(t *testing.T) {
 }
 
 func TestCheckRepositoryExistsNotFound(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "ghqx-get-notfound")
+	tmp, err := os.MkdirTemp("", "ghqx-get-notfound")
 	if err != nil {
 		t.Fatalf("tempdir: %v", err)
 	}
@@ -118,7 +117,7 @@ func TestContainsFunction(t *testing.T) {
 }
 
 func TestRunGetWithWorkspaceFlag(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "ghqx-get-workspace")
+	tmp, err := os.MkdirTemp("", "ghqx-get-workspace")
 	if err != nil {
 		t.Fatalf("tempdir: %v", err)
 	}
@@ -156,7 +155,7 @@ func TestRunGetWithWorkspaceFlag(t *testing.T) {
 
 func TestCheckRepositoryExistsWithStatusError(t *testing.T) {
 	// Test when Status.GetAll returns an error
-	tmp, err := ioutil.TempDir("", "ghqx-get-error")
+	tmp, err := os.MkdirTemp("", "ghqx-get-error")
 	if err != nil {
 		t.Fatalf("tempdir: %v", err)
 	}
@@ -178,7 +177,7 @@ func TestCheckRepositoryExistsWithStatusError(t *testing.T) {
 }
 
 func TestRunGetNoArgs(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "ghqx-get-noargs")
+	tmp, err := os.MkdirTemp("", "ghqx-get-noargs")
 	if err != nil {
 		t.Fatalf("tempdir: %v", err)
 	}

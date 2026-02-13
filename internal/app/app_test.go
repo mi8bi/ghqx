@@ -1,7 +1,6 @@
 package app
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -20,7 +19,7 @@ func TestNewAndNewFromConfigPath(t *testing.T) {
 	}
 
 	// create a temp config file and save using loader
-	tmp, err := ioutil.TempDir("", "ghqx-app-test")
+	tmp, err := os.MkdirTemp("", "ghqx-app-test")
 	if err != nil {
 		t.Fatalf("tempdir: %v", err)
 	}
