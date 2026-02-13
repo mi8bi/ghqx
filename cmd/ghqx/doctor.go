@@ -17,7 +17,7 @@ var doctorCmd = &cobra.Command{
 }
 
 func runDoctor(cmd *cobra.Command, args []string) error {
-	doctorService := doctor.NewService()
+	doctorService := doctor.NewServiceWithConfigPath(configPath)
 	results := doctorService.RunChecks()
 
 	allOK := true

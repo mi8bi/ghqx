@@ -19,12 +19,22 @@ type CheckResult struct {
 // Service は環境診断サービスです
 type Service struct {
 	configLoader *config.Loader
+	configPath   string // Add this field
 }
 
 // NewService は新しい Service を作成します
 func NewService() *Service {
 	return &Service{
 		configLoader: config.NewLoader(),
+		configPath:   "", // Empty means use default search
+	}
+}
+
+// NewServiceWithConfigPath は指定された設定パスで Service を作成します
+func NewServiceWithConfigPath(configPath string) *Service {
+	return &Service{
+		configLoader: config.NewLoader(),
+		configPath:   configPath,
 	}
 }
 
@@ -39,7 +49,7 @@ func (s *Service) RunChecks() []CheckResult {
 
 // CheckConfig は設定ファイルを診断します
 func (s *Service) CheckConfig() CheckResult {
-	_, err := s.configLoader.Load("")
+	_, err := s.configLoader.Load(s.configPath)
 	if err != nil {
 		return CheckResult{
 			Name:    i18n.T("doctor.check.config.name"),

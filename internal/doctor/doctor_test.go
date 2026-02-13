@@ -22,7 +22,8 @@ func TestRunChecksWhenToolsMissing(t *testing.T) {
 		t.Fatalf("expected 3 checks, got %d", len(res))
 	}
 
-	// Config check may vary depending on environment; avoid asserting on res[0].OK.
+	// Config check may pass or fail depending on whether default config exists
+	// We only check that ghq and git checks fail
 	if res[1].OK {
 		t.Fatalf("expected ghq check to fail when ghq missing")
 	}
