@@ -22,6 +22,9 @@ func TestMatchLocaleStringCases(t *testing.T) {
 		{"ja", i18n.LocaleJA},
 		{"EN", i18n.LocaleEN},
 		{"JA", i18n.LocaleJA},
+		{"en:ja", i18n.LocaleEN},       // First in list should win
+		{"ja:en", i18n.LocaleJA},       // First in list should win
+		{"en_US:ja_JP", i18n.LocaleEN}, // First in list should win
 		{"fr_FR", ""},
 		{"de_DE", ""},
 		{"", ""},
@@ -79,14 +82,22 @@ func TestGetOSLanguageLocaleWithLANG(t *testing.T) {
 		t.Errorf("Test 2: expected LocaleJA with LC_ALL=ja_JP.UTF-8, got %v", locale)
 	}
 
-	// Test 3: LANGUAGE
+	// Test 3: LANGUAGE (first language in list should win)
 	os.Unsetenv("LC_ALL")
 	os.Unsetenv("LANG")
 	os.Setenv("LANGUAGE", "en:ja")
 
 	locale = getOSLanguageLocale()
 	if locale != i18n.LocaleEN {
-		t.Errorf("Test 3: expected LocaleEN with LANGUAGE=en:ja, got %v", locale)
+		t.Errorf("Test 3: expected LocaleEN with LANGUAGE=en:ja (first in list), got %v", locale)
+	}
+
+	// Test 3b: LANGUAGE with ja first
+	os.Setenv("LANGUAGE", "ja:en")
+
+	locale = getOSLanguageLocale()
+	if locale != i18n.LocaleJA {
+		t.Errorf("Test 3b: expected LocaleJA with LANGUAGE=ja:en (first in list), got %v", locale)
 	}
 
 	// Test 4: Default (no env vars)

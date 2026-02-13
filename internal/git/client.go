@@ -24,6 +24,14 @@ func NewClient() *Client {
 	}
 }
 
+// NewClientWithTimeout creates a new git client with a custom timeout.
+// This is primarily intended for testing purposes.
+func NewClientWithTimeout(timeout time.Duration) *Client {
+	return &Client{
+		timeout: timeout,
+	}
+}
+
 // IsDirty checks if a repository has uncommitted changes.
 // Returns true if there are staged or unstaged modifications.
 func (c *Client) IsDirty(repoPath string) (bool, error) {

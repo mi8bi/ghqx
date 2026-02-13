@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"testing"
+	"time"
 )
 
 func TestHasGitUnavailableWhenPathEmpty(t *testing.T) {
@@ -92,7 +93,8 @@ func TestInitCommitFlowWhenGitAvailable(t *testing.T) {
 		t.Fatalf("git commit failed: %v, out: %s", err, string(out))
 	}
 
-	c := NewClient()
+	// Use longer timeout for test environment (Windows can be slow)
+	c := NewClientWithTimeout(5 * time.Second)
 
 	dirty, err := c.IsDirty(tmp)
 	if err != nil {

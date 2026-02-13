@@ -163,12 +163,39 @@ func getOSLanguageLocale() i18n.Locale {
 // matchLocaleString checks if a string contains language hints and returns appropriate locale.
 func matchLocaleString(str string) i18n.Locale {
 	lowerStr := strings.ToLower(str)
-	if strings.Contains(lowerStr, "ja") {
-		return i18n.LocaleJA
+
+	// Split by common separators to get language codes
+	// LANGUAGE can be "en:ja:fr" format
+	parts := strings.FieldsFunc(lowerStr, func(r rune) bool {
+		return r == ':' || r == ';' || r == ','
+	})
+
+	// Check each part in order (first match wins)
+	for _, part := range parts {
+		// Extract language code (before any underscore or dot)
+		// e.g., "en_US.UTF-8" -> "en"
+		langCode := part
+		if idx := strings.IndexAny(part, "_."); idx != -1 {
+			langCode = part[:idx]
+		}
+
+		// Match language code
+		switch langCode {
+		case "en":
+			return i18n.LocaleEN
+		case "ja":
+			return i18n.LocaleJA
+		}
 	}
+
+	// Fallback: check if the whole string contains language hints
 	if strings.Contains(lowerStr, "en") {
 		return i18n.LocaleEN
 	}
+	if strings.Contains(lowerStr, "ja") {
+		return i18n.LocaleJA
+	}
+
 	return ""
 }
 
