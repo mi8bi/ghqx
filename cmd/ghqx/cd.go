@@ -46,6 +46,11 @@ func runCD(cmd *cobra.Command, args []string) error {
 // loadProjectsForSelection loads all projects from the default root
 // and converts them to display format for the selector.
 func loadProjectsForSelection() ([]status.ProjectDisplay, error) {
+	// Check if application is initialized
+	if application == nil {
+		return nil, fmt.Errorf("application not initialized")
+	}
+
 	opts := status.Options{
 		CheckDirty: false, // Not needed for cd operation
 		LoadBranch: false, // Not needed for cd operation

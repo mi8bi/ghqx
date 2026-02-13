@@ -41,46 +41,62 @@ func TestGetOSLanguageLocaleWithLANG(t *testing.T) {
 	origLANG := os.Getenv("LANG")
 	origLANGUAGE := os.Getenv("LANGUAGE")
 	defer func() {
-		os.Setenv("LC_ALL", origLC)
-		os.Setenv("LANG", origLANG)
-		os.Setenv("LANGUAGE", origLANGUAGE)
+		// Restore original values
+		if origLC != "" {
+			os.Setenv("LC_ALL", origLC)
+		} else {
+			os.Unsetenv("LC_ALL")
+		}
+		if origLANG != "" {
+			os.Setenv("LANG", origLANG)
+		} else {
+			os.Unsetenv("LANG")
+		}
+		if origLANGUAGE != "" {
+			os.Setenv("LANGUAGE", origLANGUAGE)
+		} else {
+			os.Unsetenv("LANGUAGE")
+		}
 	}()
 
-	// Clear all
+	// Test 1: LANG only
 	os.Unsetenv("LC_ALL")
-	os.Unsetenv("LANG")
 	os.Unsetenv("LANGUAGE")
-
-	// Test LANG
 	os.Setenv("LANG", "en_US.UTF-8")
+
 	locale := getOSLanguageLocale()
 	if locale != i18n.LocaleEN {
-		t.Errorf("expected LocaleEN with LANG=en_US.UTF-8, got %v", locale)
+		t.Errorf("Test 1: expected LocaleEN with LANG=en_US.UTF-8, got %v", locale)
 	}
 
-	// Test LC_ALL (highest priority)
+	// Test 2: LC_ALL has highest priority
 	os.Setenv("LC_ALL", "ja_JP.UTF-8")
+	os.Setenv("LANG", "en_US.UTF-8")
+	os.Unsetenv("LANGUAGE")
+
 	locale = getOSLanguageLocale()
 	if locale != i18n.LocaleJA {
-		t.Errorf("expected LocaleJA with LC_ALL=ja_JP.UTF-8, got %v", locale)
+		t.Errorf("Test 2: expected LocaleJA with LC_ALL=ja_JP.UTF-8, got %v", locale)
 	}
 
-	// Test LANGUAGE
+	// Test 3: LANGUAGE
 	os.Unsetenv("LC_ALL")
 	os.Unsetenv("LANG")
 	os.Setenv("LANGUAGE", "en:ja")
+
 	locale = getOSLanguageLocale()
 	if locale != i18n.LocaleEN {
-		t.Errorf("expected LocaleEN with LANGUAGE=en:ja, got %v", locale)
+		t.Errorf("Test 3: expected LocaleEN with LANGUAGE=en:ja, got %v", locale)
 	}
 
-	// Test default (no env vars)
+	// Test 4: Default (no env vars)
 	os.Unsetenv("LC_ALL")
 	os.Unsetenv("LANG")
 	os.Unsetenv("LANGUAGE")
+
 	locale = getOSLanguageLocale()
 	if locale != i18n.LocaleJA {
-		t.Errorf("expected LocaleJA as default, got %v", locale)
+		t.Errorf("Test 4: expected LocaleJA as default, got %v", locale)
 	}
 }
 

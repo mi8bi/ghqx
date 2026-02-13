@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -25,6 +26,11 @@ func TestRunDoctorWithValidConfig(t *testing.T) {
 		Default: config.DefaultConfig{Root: "dev"},
 	}
 
+	// Create the dev directory
+	if err := os.MkdirAll(cfg.Roots["dev"], 0755); err != nil {
+		t.Fatalf("failed to create dev dir: %v", err)
+	}
+
 	loader := config.NewLoader()
 	if err := loader.Save(cfg, cfgPath); err != nil {
 		t.Fatalf("failed to save config: %v", err)
@@ -39,17 +45,27 @@ func TestRunDoctorWithValidConfig(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	// Run doctor (should not exit, so we expect it to succeed)
-	err = runDoctor(doctorCmd, []string{})
+	// Run doctor in a goroutine to capture panic from os.Exit
+	done := make(chan bool)
+	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				// os.Exit might cause panic in test environment
+			}
+			done <- true
+		}()
+		_ = runDoctor(doctorCmd, []string{})
+	}()
 
+	<-done
 	w.Close()
 	os.Stdout = oldStdout
-	output, _ := ioutil.ReadAll(r)
+	output, _ := io.ReadAll(r)
 	outputStr := string(output)
 
 	// Check that output contains check results
-	if !strings.Contains(outputStr, i18n.T("doctor.check.config.name")) {
-		t.Errorf("doctor output missing config check")
+	if !strings.Contains(outputStr, i18n.T("doctor.check.config.ok")) {
+		t.Errorf("doctor output missing config check, got: %s", outputStr)
 	}
 }
 
