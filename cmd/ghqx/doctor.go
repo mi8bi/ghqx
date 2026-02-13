@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/mi8bi/ghqx/internal/doctor"
+	"github.com/mi8bi/ghqx/internal/domain"
 	"github.com/mi8bi/ghqx/internal/i18n"
 	"github.com/spf13/cobra"
 )
@@ -34,8 +34,11 @@ func runDoctor(cmd *cobra.Command, args []string) error {
 	}
 
 	if !allOK {
-		// NGがあった場合は終了コード 1 で終了
-		os.Exit(1)
+		// Return an error instead of os.Exit(1)
+		return domain.NewError(
+			domain.ErrCodeUnknown,
+			"Environment check failed",
+		).WithHint("Fix the issues above and try again")
 	}
 
 	return nil

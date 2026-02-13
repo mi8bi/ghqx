@@ -40,12 +40,27 @@ func TestRunStatusCompactMode(t *testing.T) {
 		t.Fatalf("mkdir: %v", err)
 	}
 
+	// Create config file
+	cfgPath := filepath.Join(tmp, "config.toml")
 	cfg := &config.Config{
 		Roots:   map[string]string{"sandbox": tmp},
 		Default: config.DefaultConfig{Root: "sandbox"},
 	}
-	appInstance := app.New(cfg)
-	application = appInstance
+
+	loader := config.NewLoader()
+	if err := loader.Save(cfg, cfgPath); err != nil {
+		t.Fatalf("failed to save config: %v", err)
+	}
+
+	// Set configPath so loadApp can find it
+	oldConfigPath := configPath
+	configPath = cfgPath
+	defer func() { configPath = oldConfigPath }()
+
+	// Reset application
+	oldApp := application
+	application = nil
+	defer func() { application = oldApp }()
 
 	oldVerbose := statusVerbose
 	oldTUI := statusTUI
@@ -75,12 +90,27 @@ func TestRunStatusVerboseMode(t *testing.T) {
 		t.Fatalf("mkdir: %v", err)
 	}
 
+	// Create config file
+	cfgPath := filepath.Join(tmp, "config.toml")
 	cfg := &config.Config{
 		Roots:   map[string]string{"sandbox": tmp},
 		Default: config.DefaultConfig{Root: "sandbox"},
 	}
-	appInstance := app.New(cfg)
-	application = appInstance
+
+	loader := config.NewLoader()
+	if err := loader.Save(cfg, cfgPath); err != nil {
+		t.Fatalf("failed to save config: %v", err)
+	}
+
+	// Set configPath so loadApp can find it
+	oldConfigPath := configPath
+	configPath = cfgPath
+	defer func() { configPath = oldConfigPath }()
+
+	// Reset application
+	oldApp := application
+	application = nil
+	defer func() { application = oldApp }()
 
 	oldVerbose := statusVerbose
 	oldTUI := statusTUI
