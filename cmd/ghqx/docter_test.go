@@ -2,7 +2,6 @@ package main
 
 import (
 	"io"
-
 	"os"
 	"path/filepath"
 	"strings"
@@ -182,5 +181,50 @@ func TestRunDoctorWithEmptyPath(t *testing.T) {
 	}
 	if !gitFailed {
 		t.Error("expected git check to fail when PATH is empty")
+	}
+}
+
+// Test runDoctor command directly
+func TestRunDoctorCommand(t *testing.T) {
+	tmp, err := os.MkdirTemp("", "ghqx-doctor-cmd")
+	if err != nil {
+		t.Fatalf("tempdir: %v", err)
+	}
+	defer os.RemoveAll(tmp)
+
+	cfgPath := filepath.Join(tmp, "config.toml")
+	cfg := &config.Config{
+		Roots:   map[string]string{"dev": filepath.Join(tmp, "dev")},
+		Default: config.DefaultConfig{Root: "dev"},
+	}
+
+	if err := os.MkdirAll(cfg.Roots["dev"], 0755); err != nil {
+		t.Fatalf("failed to create dev dir: %v", err)
+	}
+
+	loader := config.NewLoader()
+	if err := loader.Save(cfg, cfgPath); err != nil {
+		t.Fatalf("failed to save config: %v", err)
+	}
+
+	oldConfigPath := configPath
+	configPath = cfgPath
+	defer func() { configPath = oldConfigPath }()
+
+	// Capture output
+	oldStdout := os.Stdout
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+
+	err = runDoctor(doctorCmd, []string{})
+
+	w.Close()
+	os.Stdout = oldStdout
+	output, _ := io.ReadAll(r)
+	outputStr := string(output)
+
+	// Should contain check results
+	if !strings.Contains(outputStr, i18n.T("doctor.check.config.ok")) {
+		t.Error("output should contain config check")
 	}
 }
