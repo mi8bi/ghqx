@@ -26,34 +26,62 @@ ghqx extends ghq by managing multiple workspaces (dev/release/sandbox).
 
 ## Installation
 
+### Manual Installation (Recommended)
+
+Download the latest binary from the [GitHub Releases](https://github.com/mi8bi/ghqx/releases) page:
+
+#### macOS
+
 ```bash
-go install github.com/mi8bi/ghqx/cmd/ghqx@latest
+# For Apple Silicon (ARM64)
+curl -L https://github.com/mi8bi/ghqx/releases/latest/download/ghqx_Darwin_arm64.tar.gz | tar xz
+sudo mv ghqx /usr/local/bin/
+
+# For Intel (x86_64)
+curl -L https://github.com/mi8bi/ghqx/releases/latest/download/ghqx_Darwin_x86_64.tar.gz | tar xz
+sudo mv ghqx /usr/local/bin/
+```
+
+#### Linux
+
+```bash
+# For x86_64
+curl -L https://github.com/mi8bi/ghqx/releases/latest/download/ghqx_Linux_x86_64.tar.gz | tar xz
+sudo mv ghqx /usr/local/bin/
+
+# For ARM64
+curl -L https://github.com/mi8bi/ghqx/releases/latest/download/ghqx_Linux_arm64.tar.gz | tar xz
+sudo mv ghqx /usr/local/bin/
+```
+
+#### Windows
+
+1. Go to the [Releases](https://github.com/mi8bi/ghqx/releases) page
+2. Download `ghqx_Windows_x86_64.zip`
+3. Extract the archive using File Explorer's "Extract All..." option
+4. Move `ghqx.exe` to a directory in your PATH (e.g., `%USERPROFILE%\bin\`)
+
+#### Verify Installation
+
+```bash
+ghqx version
 ```
 
 After installation, create the initial configuration:
+
 ```bash
 ghqx config init
 ```
 
-## Manual Installation
+### For Developers
 
-You can download prebuilt binaries from the [GitHub Releases page](https://github.com/mi8bi/ghqx/releases):
+If you want to build from source or contribute to development:
 
-1. Go to the [Releases](https://github.com/mi8bi/ghqx/releases) page on GitHub.
-2. Find the latest release and download the binary file for your OS and architecture (e.g., `ghqx_windows_amd64.zip` or `ghqx_linux_amd64.tar.gz`).
-3. Extract the archive. For `.tar.gz` files on Linux/macOS:
-  ```bash
-  tar -xzvf ghqx_VERSION_OS_ARCH.tar.gz
-  ```
-  For `.zip` files on Windows, you can use File Explorer's built-in "Extract All..." option.
-4. Move the extracted `ghqx` (or `ghqx.exe` on Windows) executable to a directory in your system's PATH.
-  - For Linux/macOS, a common location is `/usr/local/bin/`:
-    ```bash
-    sudo mv ghqx /usr/local/bin/
-    ```
-  - For Windows, you might choose a directory like `%USERPROFILE%\bin\` and ensure this directory is added to your PATH environment variable.
-5. Run `ghqx --help` (or `ghqx.exe --help` on Windows) to verify the installation.
+```bash
+go install github.com/mi8bi/ghqx/cmd/ghqx@latest
+```
 
+**Note**: When installing via `go install`, the `ghqx version` command will not display the correct version information. Use the manual installation method for the full experience.
 
 ## Commands
 
@@ -181,6 +209,13 @@ Checks if the `ghqx` environment is set up correctly, verifying:
 - Configuration file existence and validity.
 - `ghq` command availability.
 - `git` command availability.
+
+### `ghqx version`
+Display version information.
+
+```bash
+ghqx version
+```
 
 ## Configuration
 
