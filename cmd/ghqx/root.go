@@ -58,9 +58,8 @@ func init() {
 	rootCmd.Short = i18n.T("root.command.short")
 	rootCmd.Long = i18n.T("root.command.long")
 
-	// Set all subcommand descriptions after locale is initialized
-	cdCmd.Short = i18n.T("cd.command.short")
-	cdCmd.Long = i18n.T("cd.command.long")
+	listCmd.Short = i18n.T("list.command.short")
+	listCmd.Long = i18n.T("list.command.long")
 
 	versionCmd.Short = i18n.T("version.command.short")
 	versionCmd.Long = i18n.T("version.command.long")
@@ -91,7 +90,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&configPath, "config", "", i18n.T("root.flag.config"))
 
 	rootCmd.AddCommand(statusCmd)
-	rootCmd.AddCommand(cdCmd)
+	rootCmd.AddCommand(listCmd)
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(configCmd)
 	rootCmd.AddCommand(getCmd)

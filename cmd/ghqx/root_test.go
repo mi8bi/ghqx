@@ -204,7 +204,7 @@ func TestLoadAppFailure(t *testing.T) {
 
 func TestRootCommandSetup(t *testing.T) {
 	// Verify that rootCmd has expected subcommands
-	subcommands := []string{"status", "cd", "version", "config", "get", "doctor", "clean", "mode"}
+	subcommands := []string{"status", "version", "config", "get", "doctor", "clean", "mode"}
 
 	for _, cmdName := range subcommands {
 		found := false

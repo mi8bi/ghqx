@@ -19,10 +19,11 @@ ghqx extends ghq by managing multiple workspaces (dev/release/sandbox).
 ## Features
 
 - **Project status** across all workspaces
-- **Shell integration** for `cd` command
+- **Shell integration** for quick project navigation with fzf/peco
 - **Configuration management** (interactive init, viewing, and TUI editor)
-- **Zone-aware cloning** with `ghqx get`
+- **Workspace-aware cloning** with `ghqx get`
 - **Default workspace mode selection** with `ghqx mode`
+- **Project listing** with `ghqx list` for integration with fuzzy finders
 
 ## Installation
 
@@ -83,6 +84,90 @@ go install github.com/mi8bi/ghqx/cmd/ghqx@latest
 
 **Note**: When installing via `go install`, the `ghqx version` command will not display the correct version information. Use the manual installation method for the full experience.
 
+## Shell Integration
+
+ghqx works seamlessly with fuzzy finders like `fzf` or `peco` for quick project navigation. The `ghqx list` command outputs projects from your default workspace (set with `ghqx mode`), making it easy to integrate with your favorite fuzzy finder.
+
+### Prerequisites
+
+**Install fzf (recommended) or peco:**
+
+```bash
+# macOS
+brew install fzf
+
+# Windows (PowerShell)
+scoop install fzf
+# or
+choco install fzf
+
+# Linux
+sudo apt install fzf  # Debian/Ubuntu
+sudo dnf install fzf  # Fedora
+```
+
+### Setup Shell Function
+
+Add the following function to your shell configuration file:
+
+**Bash (~/.bashrc) / Zsh (~/.zshrc):**
+
+```bash
+ghqxc() {
+  local selected
+  selected=$(ghqx list --full-path | fzf --height 40% --reverse --border --prompt="Select project: ")
+  if [ -n "$selected" ]; then
+    cd "$selected"
+  fi
+}
+```
+
+**PowerShell ($PROFILE):**
+
+```powershell
+function ghqxc {
+  $selected = ghqx list --full-path | fzf --height 40% --reverse --border --prompt="Select project: "
+  if ($selected) {
+    Set-Location $selected
+  }
+}
+```
+
+**Fish (~/.config/fish/config.fish):**
+
+```fish
+function ghqxc
+  set selected (ghqx list --full-path | fzf --height 40% --reverse --border --prompt="Select project: ")
+  test -n "$selected"; and cd $selected
+end
+```
+
+### Usage
+
+```bash
+# Interactive project selection and navigation
+ghqxc
+
+# Or use directly in one line
+cd $(ghqx list --full-path | fzf)
+
+# With peco instead of fzf
+cd $(ghqx list --full-path | peco)
+
+# List projects from all workspaces (not just default)
+cd $(ghqx list --all --full-path | fzf)
+
+# Browse relative paths (for reference, but cd needs full paths)
+ghqx list | fzf
+```
+
+### How it works
+
+- **`ghqx list`**: Lists projects from your default workspace (set with `ghqx mode`)
+- **`ghqx list --all`**: Lists projects from all workspaces (dev/release/sandbox)
+- **`ghqx list --full-path`**: Shows absolute paths instead of relative paths
+- **`ghqx mode`**: Changes which workspace is used by default for `ghqx list` and `ghqx get`
+
 ## Commands
 
 ### `ghqx status`
@@ -94,64 +179,61 @@ ghqx status
 
 # Verbose view with full paths
 ghqx status -v
+
+# Interactive TUI mode
+ghqx status --tui
 ```
 
 Output includes:
 - Project name
-- Zone (sandbox/dev/release)
+- Workspace (sandbox/dev/release)
 - Git managed status
 - Clean/dirty status
 - Non-git managed directories are also shown.
 
-### `ghqx cd` (Shell Integration)
+### `ghqx list`
 
-`ghqx cd` launches an interactive Terminal UI to select a project or directory and then prints its full path to standard output. This command cannot directly change your shell's current directory. To do that, you need to use shell integration as described below.
+List project paths for integration with fuzzy finders.
 
-**Keybindings:**
-- **↑↓** or **j/k** - Navigate through projects
-- **/** - Start searching
-- **Enter** - Select project and exit
-- **Esc** or **Ctrl+C** - Quit without selecting
-
-**1. Bash / Zsh:**
-
-Add the following function to your `.bashrc` or `.zshrc` file:
 ```bash
-ghqxc() {
-  local path
-  path=$(ghqx cd)
-  if [ -n "$path" ]; then
-    cd "$path"
-  fi
-}
+# List projects from default workspace (respects ghqx mode)
+ghqx list
+
+# List projects from all workspaces
+ghqx list --all
+ghqx list -a
+
+# Show full absolute paths
+ghqx list --full-path
+ghqx list -p
 ```
-Usage:
+
+**Output format:**
+- Default: Relative paths from workspace root (like `github.com/user/repo`)
+- With `--full-path`: Absolute paths (like `/home/user/ghqx/dev/github.com/user/repo`)
+- Default scope: Only projects in your default workspace
+- With `--all`: Projects from all workspaces (dev/release/sandbox)
+
+**Integration examples:**
 ```bash
-# This will open the TUI to select a project
-ghqxc
-```
+# Navigate with fzf (use --full-path for cd)
+cd $(ghqx list --full-path | fzf)
 
-**2. PowerShell:**
+# Navigate with peco
+cd $(ghqx list --full-path | peco)
 
-Add the following function to your PowerShell profile (usually `$PROFILE`):
-```powershell
-function ghqxc {
-  $path = (ghqx cd)
-  if ($path) {
-    Set-Location $path
-  }
-}
-```
-Usage:
-```powershell
-# This will open the TUI to select a project
-ghqxc
+# Search all workspaces
+cd $(ghqx list --all --full-path | fzf)
 ```
 
 ### `ghqx mode`
 Select and set the default workspace mode.
 
-This command provides an interactive TUI to choose the default root for certain `ghqx` operations (e.g., `ghqx get` without specifying `--zone`).
+This command provides an interactive TUI to choose the default root for `ghqx list` and `ghqx get` operations.
+
+```bash
+ghqx mode
+```
 
 **Keybindings:**
 - **↑↓** or **j/k** - Navigate through options
@@ -159,21 +241,23 @@ This command provides an interactive TUI to choose the default root for certain 
 - **Esc** or **Ctrl+C** - Quit without selecting
 
 ### `ghqx get <repository>`
-Clones a repository into a specified workspace zone using `ghq`.
+Clones a repository into a specified workspace using `ghq`.
 
 The repository can be specified as:
 - Full URL: `https://github.com/user/repo`
 - Short form: `github.com/user/repo`
 - User/repo: `user/repo` (assumes github.com)
 
-By default, repositories are cloned to the configured default zone (`ghqx mode` can change this).
+By default, repositories are cloned to the configured default workspace (`ghqx mode` can change this).
 
 ```bash
-# Clone to default zone (e.g., dev if configured)
+# Clone to default workspace
 ghqx get user/repo
 
-# Clone to dev zone
-ghqx get user/repo --zone dev
+# Clone to specific workspace
+ghqx get user/repo --workspace dev
+ghqx get user/repo --workspace sandbox
+ghqx get user/repo --workspace release
 ```
 
 ### `ghqx config`
@@ -215,6 +299,9 @@ Display version information.
 
 ```bash
 ghqx version
+
+# With detailed build information
+ghqx version --verbose
 ```
 
 ## Configuration
@@ -225,17 +312,17 @@ Example `config.toml`:
 
 ```toml
 [roots]
-sandbox = "C:/Users/YourUser/ghqx/sandbox"
-dev = "C:/Users/YourUser/ghqx/dev"
-release = "C:/Users/YourUser/ghqx/release"
+dev = "/Users/username/ghqx/dev"
+release = "/Users/username/ghqx/release"
+sandbox = "/Users/username/ghqx/sandbox"
 
 [default]
 root = "sandbox"
 ```
 
-- **`[roots]`**: Defines the paths for your different workspaces (zones).
+- **`[roots]`**: Defines the paths for your different workspaces.
 - **`[default]`**:
-  - `root`: The default root to use for certain operations.
+  - `root`: The default workspace to use for `ghqx list` and `ghqx get` operations.
 
 ## Architecture
 
@@ -244,7 +331,7 @@ ghqx/
 ├── cmd/ghqx/          # Thin CLI layer
 │   ├── root.go
 │   ├── status.go
-│   ├── cd.go
+│   ├── list.go        # Project listing for fzf/peco integration
 │   ├── config.go
 │   ├── get.go
 │   ├── clean.go
@@ -258,7 +345,6 @@ ghqx/
 │   ├── git/           # Git operations
 │   ├── ghq/           # ghq command client
 │   ├── i18n/          # Internationalization
-│   ├── selector/      # TUI project selector (used by ghqx cd)
 │   ├── status/        # Status scanning logic
 │   ├── tui/           # Main TUI components (used by ghqx status --tui)
 │   └── ui/            # CLI output formatting
@@ -266,7 +352,7 @@ ghqx/
 ├── Makefile
 ├── .goreleaser.yaml       # Multi-platform release config
 ├── .github/workflows/     # CI/CD workflows
-│   ├── test.yml           # Automated tests
+│   ├── codecov.yml        # Automated tests with coverage
 │   └── release.yml        # Automated releases
 ├── BUILDING.md            # Build instructions
 ├── CI_CD.md              # CI/CD pipeline documentation

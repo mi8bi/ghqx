@@ -23,11 +23,9 @@ It diagnoses the following items:
 		"doctor.check.git.fail.found":   "git not found",
 		"doctor.check.git.fail.exec":    "Failed to execute git --version",
 		"doctor.check.git.hint.install": "Install git",
-
-		// cd Command
-		"cd.command.short": "Select a project or directory and output its path",
-		"cd.command.long": `cd displays an interactive TUI to select a project or directory and outputs its full path.
-This command cannot directly change your shell's current directory. To do that, you need to use shell integration.`,
+		// List Command
+		"list.command.short": "List all project paths",
+		"list.command.long":  "List all project paths, one per line. Can be piped to fzf or peco for interactive selection.",
 
 		// version Command
 		"version.command.short": "Show application version",
@@ -115,14 +113,6 @@ This command cannot directly change your shell's current directory. To do that, 
 		// TUI Help
 		"status.help.error": "q: Quit | r: Retry",
 		"status.help.main":  "↑↓/jk: Move | d: Detail | r: Reload | q: Quit",
-
-		// Selector
-		"selector.title":              "Select a project",
-		"selector.search.placeholder": "Filter projects...",
-		"selector.search.label":       "Search:",
-		"selector.search.noMatches":   "No matching projects found.",
-		// "selector.help":                 "↑↓: Move | Enter: Select | Esc/q: Quit", Removed this line
-		"selector.helpWithPecoSearch": "↑↓: Move | Enter: Select | Esc: Quit", // New key
 
 		"doctor.result.ok":   "[OK]",
 		"doctor.result.ng":   "[NG]",

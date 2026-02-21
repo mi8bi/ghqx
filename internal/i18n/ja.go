@@ -23,11 +23,9 @@ func loadJapaneseMessages() {
 		"doctor.check.git.fail.found":   "git が見つかりません",
 		"doctor.check.git.fail.exec":    "git --version の実行に失敗しました",
 		"doctor.check.git.hint.install": "git をインストールしてください",
-
-		// cd Command
-		"cd.command.short": "プロジェクトまたはディレクトリを選択し、そのパスを出力",
-		"cd.command.long": `cd は対話的な TUI を表示してプロジェクトまたはディレクトリを選択し、そのフルパスを出力します。
-このコマンドは直接シェルのカレントディレクトリを変更することはできません。そのためには、シェル連携を使用する必要があります。`,
+		// List Command
+		"list.command.short": "全プロジェクトのパスを一覧表示",
+		"list.command.long":  "全プロジェクトのパスを1行ずつ表示します。fzfやpecoと組み合わせて使用できます。",
 
 		// version Command
 		"version.command.short": "アプリケーションバージョンを表示",
@@ -115,14 +113,6 @@ func loadJapaneseMessages() {
 		// TUI Help
 		"status.help.error": "q: 終了 | r: 再試行",
 		"status.help.main":  "↑↓/jk: 移動 | d: 詳細 | r: 再読み込み | q: 終了",
-
-		// Selector
-		"selector.title":              "プロジェクトを選択してください",
-		"selector.search.placeholder": "プロジェクトをフィルタリング...",
-		"selector.search.label":       "検索:",
-		"selector.search.noMatches":   "一致するプロジェクトは見つかりませんでした。",
-		// "selector.help":                 "↑↓: 移動 | Enter: 選択 | Esc/q: 終了", Removed this line
-		"selector.helpWithPecoSearch": "↑↓: 移動 | Enter: 選択 | Esc: 終了", // New key
 
 		"doctor.result.ok":   "[OK]",
 		"doctor.result.ng":   "[NG]",
